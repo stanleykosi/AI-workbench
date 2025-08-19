@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+---
+#
+# @description
+# This Docker Compose file sets up the local development environment for the AI Workbench,
+# specifically for running the Temporal workflow orchestration service.
+#
+# Key Services:
+# - postgres: PostgreSQL database for Temporal
+# - temporal: Temporal server connecting to the PostgreSQL database
+# - temporal-ui: The official web-based user interface for observing and debugging
+#   Temporal workflows.
+#
+# Usage:
+# - To start the services in detached mode, run: `docker-compose up -d`
+# - To stop the services, run: `docker-compose down`
+# - The Temporal UI will be accessible at http://localhost:8233.
+#
+services:
+  postgres:
+    image: postgres:13
+    container_name: temporal-postgres
+    environment:
+      - POSTGRES_USER=temporal
+      - POSTGRES_PASSWORD=temporal
+      - POSTGRES_DB=temporal
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - temporal-network
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: temporal
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_DB=temporal
+      - POSTGRES_SEEDS=postgres
+    depends_on:
+      - postgres
+    networks:
+      - temporal-network
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: temporal-ui
+    ports:
+      - "8233:8080"
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_UI_PORT=8080
+    networks:
+      - temporal-network
+
+volumes:
+  postgres_data:
+
+networks:
+  temporal-network:
+    driver: bridge
