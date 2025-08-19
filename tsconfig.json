@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@repo/*": ["packages/*"],
+      "@/*": ["apps/web/*"]
+    }
+  },
+  "files": [],
+  "references": [
+    { "path": "apps/web" },
+    { "path": "packages/config" },
+    { "path": "packages/ui" },
+    { "path": "packages/types" }
+  ]
+}
