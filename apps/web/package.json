@@ -22,6 +22,7 @@
     "drizzle-orm": "^0.32.0",
     "lucide-react": "^0.414.0",
     "next": "14.2.30",
+    "postgres": "^3.4.7",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.4.0",
@@ -30,7 +31,7 @@
   "devDependencies": {
     "@repo/config": "workspace:*",
     "@types/node": "^20.14.10",
-    "@types/pg": "^8.11.6",
+    "@types/pg": "^8.15.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",

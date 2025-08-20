@@ -6,13 +6,12 @@
  *
  * Key features:
  * - `createProjectAction`: Handles the creation of a new project, linked to the
- *   currently authenticated user and their active organization.
- * - `getProjectsAction`: Fetches all projects associated with the user's active
- *   organization.
+ *   currently authenticated user.
+ * - `getProjectsAction`: Fetches all projects associated with the current user.
  *
  * @dependencies
  * - `next/cache`: For `revalidatePath` to update the UI upon data mutation.
- * - `@clerk/nextjs/server`: For `auth()` to get user and organization details.
+ * - `@clerk/nextjs/server`: For `auth()` to get user details.
  * - `drizzle-orm`: For database query operators like `eq`.
  * - `zod`: For robust schema-based input validation.
  * - `@/db`: The Drizzle ORM client instance.
@@ -23,7 +22,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -37,7 +36,7 @@ const CreateProjectSchema = z.object({
 });
 
 /**
- * Creates a new project in the database for the current user's active organization.
+ * Creates a new project in the database for the current user.
  * This action is designed to be used with a form and the `useFormState` hook.
  *
  * @param prevState - The previous state of the form action (required by `useFormState` but unused here).
@@ -48,7 +47,7 @@ export async function createProjectAction(
   prevState: any,
   formData: FormData,
 ): Promise<ActionState<SelectProject>> {
-  const { userId, orgId } = auth();
+  const { userId } = auth();
 
   // 1. Authentication & Authorization Check
   // Ensure the user is logged in before proceeding.
@@ -56,14 +55,6 @@ export async function createProjectAction(
     return {
       isSuccess: false,
       message: "Unauthorized: You must be logged in to create a project.",
-    };
-  }
-  // Ensure the user has an active organization, as projects are scoped to organizations.
-  if (!orgId) {
-    return {
-      isSuccess: false,
-      message:
-        "No active organization: You must create or join an organization to create a project.",
     };
   }
 
@@ -87,13 +78,12 @@ export async function createProjectAction(
 
   // 3. Database Operation
   try {
-    // Insert the new project into the database, associating it with the user and organization.
+    // Insert the new project into the database, associating it with the user.
     const [newProject] = await db
       .insert(projectsTable)
       .values({
         name,
         userId,
-        organizationId: orgId,
       })
       .returning();
 
@@ -117,12 +107,12 @@ export async function createProjectAction(
 }
 
 /**
- * Fetches all projects associated with the current user's active organization.
+ * Fetches all projects associated with the current user.
  *
  * @returns A promise that resolves to an `ActionState` object containing the list of projects or an error.
  */
 export async function getProjectsAction(): Promise<ActionState<SelectProject[]>> {
-  const { userId, orgId } = auth();
+  const { userId } = auth();
 
   // 1. Authentication & Authorization Check
   if (!userId) {
@@ -131,21 +121,12 @@ export async function getProjectsAction(): Promise<ActionState<SelectProject[]>>
       message: "Unauthorized: You must be logged in to view projects.",
     };
   }
-  // If the user is not part of an organization, it's not an error.
-  // Simply return an empty list of projects.
-  if (!orgId) {
-    return {
-      isSuccess: true,
-      message: "No active organization found.",
-      data: [],
-    };
-  }
 
   // 2. Database Operation
   try {
-    // Fetch all projects from the database that match the user's active organization ID.
+    // Fetch all projects from the database that belong to the current user.
     const projects = await db.query.projectsTable.findMany({
-      where: eq(projectsTable.organizationId, orgId),
+      where: eq(projectsTable.userId, userId),
       orderBy: (projects, { desc }) => [desc(projects.createdAt)],
     });
 

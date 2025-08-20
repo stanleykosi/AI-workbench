@@ -1,16 +1,14 @@
 /**
  * @description
  * This component implements the header for the authenticated dashboard layout. It sits
- * at the top of the main content area and contains user-specific controls, such as
- * organization switching and user profile management.
+ * at the top of the main content area and contains user-specific controls.
  *
  * Key features:
- * - Integrates Clerk's `<OrganizationSwitcher />` for multi-tenancy and team collaboration.
  * - Integrates Clerk's `<UserButton />` for easy access to user profile and sign-out actions.
  * - A clean, responsive design that adapts to different screen sizes.
  *
  * @dependencies
- * - `@clerk/nextjs`: Provides the `OrganizationSwitcher` and `UserButton` components.
+ * - `@clerk/nextjs`: Provides the `UserButton` component.
  *
  * @notes
  * - The mobile navigation toggle is included but is currently a placeholder; its state
@@ -19,12 +17,12 @@
 "use client";
 
 import React from "react";
-import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 
 /**
  * Renders the header component for the authenticated user dashboard.
  *
- * This component provides key user and organization management controls.
+ * This component provides key user management controls.
  *
  * @returns {JSX.Element} The rendered header component.
  */
