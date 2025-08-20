@@ -1,33 +1,20 @@
 /**
  * @description
  * This file configures the authentication middleware for the Next.js application using Clerk.
- * It is responsible for protecting routes and managing public and private access.
- *
- * Key features:
- * - `createRouteMatcher`: Used to define which routes are protected. In this case,
- *   all routes under `/dashboard` require authentication.
- * - `clerkMiddleware`: The core middleware function that handles session validation
- *   and redirects unauthenticated users.
- * - `config.matcher`: A Next.js configuration object that specifies which paths
- *   the middleware should run on, optimizing performance by excluding static assets.
+ * It uses the official clerkMiddleware() pattern for route protection.
  *
  * @dependencies
- * - @clerk/nextjs/server: Provides the `clerkMiddleware` and `createRouteMatcher` functions.
- *
- * @notes
- * - The order of operations is critical: the matcher first identifies protected routes,
- *   and then the middleware calls `auth().protect()` for those specific routes.
+ * - @clerk/nextjs/server: Provides the `clerkMiddleware` function.
  */
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
-
-export default clerkMiddleware((auth, req) => {
-  if (isProtectedRoute(req)) {
-    auth().protect();
-  }
-});
+export default clerkMiddleware();
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!_next|[^?]*\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+  ],
 };
