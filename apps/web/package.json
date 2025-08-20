@@ -11,6 +11,8 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.614.0",
+    "@aws-sdk/s3-request-presigner": "^3.614.0",
     "@clerk/nextjs": "^5.2.2",
     "@neondatabase/serverless": "^0.9.4",
     "@radix-ui/react-dialog": "^1.1.15",
