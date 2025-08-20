@@ -6,7 +6,7 @@
  * Key features:
  * - `schema`: Specifies the path to the main schema file where all database tables are defined.
  * - `out`: Defines the directory where Drizzle Kit will generate SQL migration files.
- * - `driver`: Sets the database driver to 'pg' for PostgreSQL.
+ * - `dialect`: Sets the database dialect to 'postgresql'.
  * - `dbCredentials`: Provides the connection string for the Supabase database, loaded
  *   from environment variables.
  *
@@ -18,17 +18,13 @@
  * - This configuration is used by the `db:generate` and `db:push` scripts in `package.json`.
  */
 import "dotenv/config";
-import type { Config } from "drizzle-kit";
+import { defineConfig } from "drizzle-kit";
 
-if (!process.env.SUPABASE_DATABASE_URL) {
-  throw new Error("SUPABASE_DATABASE_URL environment variable is not set");
-}
-
-export default {
+export default defineConfig({
   schema: "./db/schema.ts",
   out: "./db/migrations",
-  driver: "pg",
+  dialect: "postgresql",
   dbCredentials: {
-    connectionString: process.env.SUPABASE_DATABASE_URL,
+    url: process.env.SUPABASE_DATABASE_URL || "postgresql://placeholder",
   },
-} satisfies Config;
+});

@@ -1,16 +1,22 @@
 /**
  * @description
- * This file serves as the central placeholder for all Drizzle ORM schema definitions.
- * As the application grows, all table schemas (e.g., projects, datasets, experiments)
- * will be defined in or imported into this file.
+ * This file is the primary entry point for the application's database schema.
+ * It imports and re-exports all individual table schemas, making them available
+ * to Drizzle ORM and Drizzle Kit for migrations.
  *
  * Key features:
- * - Acts as the single source of truth for the database schema.
- * - Used by Drizzle Kit to generate and manage SQL migration files.
+ * - Consolidates all schema definitions from the `db/schema/*` directory.
+ * - Serves as the single source of truth for the `drizzle.config.ts` file.
+ *
+ * @dependencies
+ * - `./schema/index`: Imports all schemas from the barrel file.
  *
  * @notes
- * - This file is intentionally left empty in this step. Schemas will be added in
- *   the next step of the implementation plan.
+ * - This approach allows for a clean and organized schema structure while maintaining
+ *   compatibility with Drizzle's tooling.
  */
 
-// Schemas for projects, datasets, experiments, and deployments will be defined here.
+// We are exporting everything from the schema barrel file.
+// This makes all tables, enums, and types available to the Drizzle client
+// and Drizzle Kit under a single import.
+export * from "./schema/index";
