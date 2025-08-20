@@ -57,7 +57,7 @@ export default function DatasetsPage({
 }) {
   return (
     <div className="space-y-6">
-      <DatasetsPageHeader />
+      <DatasetsPageHeader projectId={params.projectId} />
       <Suspense fallback={<DatasetsSkeleton />}>
         <DatasetsFetcher projectId={params.projectId} />
       </Suspense>

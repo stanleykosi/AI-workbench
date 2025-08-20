@@ -10,16 +10,19 @@
  * - Defines default metadata for the application, such as title and description.
  * - Configures the 'Inter' font for the entire application.
  * - Wraps the application in `<ClerkProvider>` to enable global auth state.
- * - Includes Clerk authentication UI components in the header.
+ * - Includes the `<Toaster />` for global notifications.
  *
  * @dependencies
  * - @clerk/nextjs: For the `ClerkProvider` and authentication components.
  * - next/font/google: For importing and using custom fonts.
+ * - @/components/ui/sonner: For the global toast notification system.
  * - ./globals.css: Contains global styles and CSS variables for theming.
  */
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -39,7 +42,15 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={inter.className}>
-          {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
