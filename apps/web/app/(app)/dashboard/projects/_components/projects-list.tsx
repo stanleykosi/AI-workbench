@@ -64,7 +64,7 @@ export function ProjectsList({ initialProjects }: ProjectsListProps) {
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {initialProjects.map((project) => (
         <Link
-          href={`/dashboard/projects/${project.id}`}
+          href={`/dashboard/projects/${project.id}/datasets`}
           key={project.id}
           className="block"
         >

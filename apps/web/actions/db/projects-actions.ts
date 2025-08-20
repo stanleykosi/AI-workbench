@@ -8,6 +8,7 @@
  * - `createProjectAction`: Handles the creation of a new project, linked to the
  *   currently authenticated user.
  * - `getProjectsAction`: Fetches all projects associated with the current user.
+ * - `getProjectByIdAction`: Fetches a single project by its ID for the current user.
  *
  * @dependencies
  * - `next/cache`: For `revalidatePath` to update the UI upon data mutation.
@@ -22,7 +23,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
-import { eq, desc } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -140,6 +141,58 @@ export async function getProjectsAction(): Promise<ActionState<SelectProject[]>>
     return {
       isSuccess: false,
       message: "Database Error: Failed to fetch projects. Please try again.",
+    };
+  }
+}
+
+/**
+ * Fetches a single project by its ID, ensuring it belongs to the current user.
+ *
+ * @param projectId - The ID of the project to fetch.
+ * @returns A promise that resolves to an `ActionState` containing the project or an error.
+ */
+export async function getProjectByIdAction(
+  projectId: string,
+): Promise<ActionState<SelectProject>> {
+  const { userId } = auth();
+
+  // 1. Authentication Check
+  if (!userId) {
+    return {
+      isSuccess: false,
+      message: "Unauthorized: You must be logged in.",
+    };
+  }
+
+  // 2. Input Validation
+  if (!projectId) {
+    return { isSuccess: false, message: "Invalid project ID provided." };
+  }
+
+  try {
+    // 3. Database Operation
+    const [project] = await db
+      .select()
+      .from(projectsTable)
+      .where(and(eq(projectsTable.id, projectId), eq(projectsTable.userId, userId)));
+
+    if (!project) {
+      return {
+        isSuccess: false,
+        message: "Project not found or you do not have permission.",
+      };
+    }
+
+    return {
+      isSuccess: true,
+      message: "Project fetched successfully.",
+      data: project,
+    };
+  } catch (error) {
+    console.error(`Error fetching project ${projectId}:`, error);
+    return {
+      isSuccess: false,
+      message: "Database Error: Failed to fetch project.",
     };
   }
 }
