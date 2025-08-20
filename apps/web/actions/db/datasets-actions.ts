@@ -148,28 +148,30 @@ export async function getDatasetsForProjectAction(
 
   try {
     // 3. Database Query with Authorization
-    // Fetch datasets only if the project belongs to the current user.
-    const datasets = await db.query.datasetsTable.findMany({
-      where: (datasets, { and, eq }) =>
+    // First verify the user has access to this project
+    const [project] = await db
+      .select()
+      .from(projectsTable)
+      .where(
         and(
-          eq(datasets.projectId, projectId),
-          // Join with projects table to check for userId
-          eq(
-            db
-              .select({ id: projectsTable.id })
-              .from(projectsTable)
-              .where(
-                and(
-                  eq(projectsTable.id, datasets.projectId),
-                  eq(projectsTable.userId, userId),
-                ),
-              )
-              .as("user_projects"),
-            datasets.projectId,
-          ),
+          eq(projectsTable.id, projectId),
+          eq(projectsTable.userId, userId),
         ),
-      orderBy: (datasets, { desc }) => [desc(datasets.createdAt)],
-    });
+      );
+
+    if (!project) {
+      return {
+        isSuccess: false,
+        message: "Project not found or you do not have permission.",
+      };
+    }
+
+    // Then fetch the datasets for the authorized project
+    const datasets = await db
+      .select()
+      .from(datasetsTable)
+      .where(eq(datasetsTable.projectId, projectId))
+      .orderBy(desc(datasetsTable.createdAt));
 
     return {
       isSuccess: true,
