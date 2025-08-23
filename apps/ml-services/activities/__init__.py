@@ -6,4 +6,8 @@ This allows for the structured import of Temporal activities defined within this
 directory throughout the ml-services application.
 """
 from .training_activity import train_model_activity
-from .db_update_activity import update_experiment_status_activity
+from .db_update_activity import (
+    update_experiment_status_activity,
+    create_dataset_record_activity,
+)
+from .data_fetching_activity import fetch_data_activity

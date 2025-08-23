@@ -9,3 +9,4 @@
  */
 
 export { startTrainingAction } from "./training-actions";
+export { startDataFetchingAction } from "./data-fetching-actions";
