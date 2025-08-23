@@ -11,4 +11,5 @@ export {
 export {
   createDatasetRecordAction,
   getDatasetsForProjectAction,
+  getDatasetByIdAction,
 } from "./datasets-actions";

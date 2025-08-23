@@ -7,6 +7,7 @@
  * Key features:
  * - `createDatasetRecordAction`: Saves metadata about a newly uploaded dataset to the database.
  * - `getDatasetsForProjectAction`: Fetches all dataset records for a specific project.
+ * - `getDatasetByIdAction`: Fetches a single dataset by its ID, ensuring user ownership.
  *
  * @dependencies
  * - `next/cache`: For `revalidatePath` to update the UI upon data mutation.
@@ -184,5 +185,57 @@ export async function getDatasetsForProjectAction(
       isSuccess: false,
       message: "Database Error: Failed to fetch datasets.",
     };
+  }
+}
+
+/**
+ * Fetches a single dataset by its ID, ensuring it belongs to the current user's project.
+ *
+ * @param datasetId - The ID of the dataset to fetch.
+ * @returns A promise that resolves to an `ActionState` containing the dataset or an error message.
+ */
+export async function getDatasetByIdAction(
+  datasetId: string,
+): Promise<ActionState<SelectDataset>> {
+  const { userId } = auth();
+  if (!userId) {
+    return { isSuccess: false, message: "Unauthorized: You must be logged in." };
+  }
+  if (!datasetId) {
+    return { isSuccess: false, message: "Invalid dataset ID." };
+  }
+
+  try {
+    // This query joins the datasets table with the projects table to verify
+    // that the dataset belongs to a project owned by the current user.
+    const [result] = await db
+      .select({
+        id: datasetsTable.id,
+        name: datasetsTable.name,
+        s3Key: datasetsTable.s3Key,
+        projectId: datasetsTable.projectId,
+        status: datasetsTable.status,
+        createdAt: datasetsTable.createdAt,
+      })
+      .from(datasetsTable)
+      .innerJoin(projectsTable, eq(datasetsTable.projectId, projectsTable.id))
+      .where(
+        and(
+          eq(datasetsTable.id, datasetId),
+          eq(projectsTable.userId, userId),
+        ),
+      );
+
+    if (!result) {
+      return {
+        isSuccess: false,
+        message: "Dataset not found or you do not have permission.",
+      };
+    }
+
+    return { isSuccess: true, message: "Dataset fetched successfully.", data: result };
+  } catch (error) {
+    console.error(`Error fetching dataset ${datasetId}:`, error);
+    return { isSuccess: false, message: "Database Error: Failed to fetch dataset." };
   }
 }
