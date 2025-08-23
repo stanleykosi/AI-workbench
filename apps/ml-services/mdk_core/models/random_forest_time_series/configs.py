@@ -27,3 +27,4 @@ class RandomForestTimeSeriesConfig:
         print(f"  test_size: {self.test_size}")
         print(f"  n_lags: {self.n_lags}")
         print(f"  scaler_feature_range: {self.scaler_feature_range}")
+

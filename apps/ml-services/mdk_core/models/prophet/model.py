@@ -97,3 +97,4 @@ class ProphetModel(Model):
             
         forecast = self.model.predict(future_dates)
         return forecast[["ds", "yhat"]].tail(steps)
+

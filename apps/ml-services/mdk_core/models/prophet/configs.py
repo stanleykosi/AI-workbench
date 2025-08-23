@@ -37,3 +37,4 @@ class ProphetConfig:
         print(f"  Daily Seasonality: {self.daily_seasonality}")
         print(f"  Periods: {self.periods}")
         print(f"  Remove Timezone: {self.remove_timezone}")
+

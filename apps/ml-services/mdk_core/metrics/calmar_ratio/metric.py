@@ -53,3 +53,4 @@ class CalmarRatioMetric(Metric):
             print(f"Calculated Calmar Ratio: {calmar_ratio}")
 
         return calmar_ratio
+

@@ -56,3 +56,4 @@ def split_and_scale_data(features, target, scaler=None, test_size=0.2, random_st
     x_val_scaled = scaler.transform(x_val)
 
     return x_train_scaled, x_val_scaled, y_train, y_val, scaler
+

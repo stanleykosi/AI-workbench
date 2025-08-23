@@ -23,3 +23,4 @@ class CSVLoader:
         ) as e:
             print(f"Error loading CSV: {e}")
             return None  # type: ignore
+

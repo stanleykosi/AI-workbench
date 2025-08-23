@@ -72,3 +72,4 @@ class SharpeRatioMetric(Metric):
             )  # Print last few rows for inspection
 
         return input_data[["date", "rolling_sharpe"]]
+

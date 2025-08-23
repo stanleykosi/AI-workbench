@@ -41,3 +41,4 @@ class MddDurationMetric(Metric):
             print(f"MDD Duration: {mdd_duration}")
 
         return int(mdd_duration)
+

@@ -111,3 +111,4 @@ class Model(ABC):
         except Exception as e:
             if self.debug:
                 print_colored(f"Failed to load model due to: {str(e)}", "error")
+

@@ -12,3 +12,4 @@ class Metric(ABC):
     @abstractmethod
     def calculate(self, input_data: pd.DataFrame) -> float:
         """Calculate the metric based on input data."""
+

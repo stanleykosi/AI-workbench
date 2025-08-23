@@ -66,3 +66,4 @@ class RandomForestModel(Model):
     def forecast(self, steps: int) -> pd.DataFrame:
         # A simple dummy forecast implementation for now
         return pd.DataFrame({"forecast": [0] * steps})
+

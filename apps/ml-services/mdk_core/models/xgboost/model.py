@@ -64,3 +64,4 @@ class XgboostModel(Model):
     def forecast(self, steps: int) -> pd.DataFrame:
         # Dummy forecast logic for now
         return pd.DataFrame({"forecast": [0] * steps})
+

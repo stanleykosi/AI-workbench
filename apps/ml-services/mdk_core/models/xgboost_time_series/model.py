@@ -106,3 +106,4 @@ class XgboostTimeSeriesModel(Model):
     def forecast(self, steps: int) -> pd.DataFrame:
         """Dummy forecast logic, should be adapted for time series forecasting."""
         return pd.DataFrame({"forecast": [0] * steps})
+

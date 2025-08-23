@@ -44,3 +44,4 @@ class LstmConfig:
         print(f"  Validation Split: {self.validation_split}")
         print(f"  Time Steps: {self.time_steps}")
         print(f"  Interval: {self.interval}")
+

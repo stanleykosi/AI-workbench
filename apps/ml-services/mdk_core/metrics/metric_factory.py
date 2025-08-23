@@ -39,3 +39,4 @@ class MetricFactory:
             raise ValueError(
                 f"Metric class '{metric_class_name}' not found in {metric_name}.metric. Error: {str(e)}"
             ) from e
+

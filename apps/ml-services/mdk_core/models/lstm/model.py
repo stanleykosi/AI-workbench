@@ -258,3 +258,4 @@ class LstmModel(Model):
             y.append(data[i + time_steps])
         
         return np.array(x), np.array(y)
+

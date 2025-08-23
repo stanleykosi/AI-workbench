@@ -45,3 +45,4 @@ class SortinoRatioMetric(Metric):
             print(f"Downside deviation: {downside_std}")
 
         return sortino_ratio
+

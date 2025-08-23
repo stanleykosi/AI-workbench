@@ -100,3 +100,4 @@ class ArimaModel(Model):
         # pylint: disable=no-member
         predictions = self.model.forecast(steps=steps)
         return pd.DataFrame(predictions)
+

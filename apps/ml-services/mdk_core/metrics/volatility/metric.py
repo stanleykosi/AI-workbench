@@ -25,3 +25,4 @@ class VolatilityMetric(Metric):
             print(f"Volatility: {volatility}")
 
         return volatility
+

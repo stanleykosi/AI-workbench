@@ -51,3 +51,4 @@ class RegressionModel(Model):
     def forecast(self, steps: int) -> pd.DataFrame:
         """Regression models do not forecast; return a dummy implementation."""
         return pd.DataFrame({"forecast": ["N/A"] * steps})
+

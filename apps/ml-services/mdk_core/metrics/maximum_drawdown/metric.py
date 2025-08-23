@@ -32,3 +32,4 @@ class MaximumDrawdownMetric(Metric):
             print(f"Maximum drawdown: {max_drawdown}")
 
         return max_drawdown
+

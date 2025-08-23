@@ -48,3 +48,4 @@ class CagrMetric(Metric):
             print(f"CAGR: {cagr}")
 
         return cagr
+

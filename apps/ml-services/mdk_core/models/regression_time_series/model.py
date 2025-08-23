@@ -86,3 +86,4 @@ class RegressionTimeSeriesModel(Model):
     def forecast(self, steps: int) -> pd.DataFrame:
         """Linear regression models generally don't forecast directly; dummy implementation for now."""
         return pd.DataFrame({"forecast": ["N/A"] * steps})
+

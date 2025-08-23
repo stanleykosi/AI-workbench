@@ -36,3 +36,4 @@ class ArimaConfig:
         print(f"  Max Iterations: {self.max_iter}")
         print(f"  Data Frequency: {self.frequency}")
         print(f"  Resampling Interval: {self.interval}")
+
