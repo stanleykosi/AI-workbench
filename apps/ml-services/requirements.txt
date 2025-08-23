@@ -15,6 +15,9 @@ modal
 boto3
 fastapi
 
+# For Database Connection (from Python)
+psycopg2-binary
+
 # Updated dependencies for Python 3.12 compatibility
 setuptools>=68.0.0
 Cython>=3.0.0
