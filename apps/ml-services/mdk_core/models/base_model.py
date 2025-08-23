@@ -112,3 +112,5 @@ class Model(ABC):
             if self.debug:
                 print_colored(f"Failed to load model due to: {str(e)}", "error")
 
+
+

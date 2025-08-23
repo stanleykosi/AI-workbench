@@ -33,3 +33,5 @@ def print_colored(message, color=None):
     # Print the message with the corresponding color
     print(f"{color_code}{message}{colors['reset']}")
 
+
+

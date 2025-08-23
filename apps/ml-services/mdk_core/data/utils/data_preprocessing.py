@@ -32,3 +32,5 @@ def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
     print("Data validation and preprocessing completed successfully.")
     return data
 
+
+

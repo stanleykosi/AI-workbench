@@ -67,3 +67,5 @@ class RandomForestModel(Model):
         # A simple dummy forecast implementation for now
         return pd.DataFrame({"forecast": [0] * steps})
 
+
+

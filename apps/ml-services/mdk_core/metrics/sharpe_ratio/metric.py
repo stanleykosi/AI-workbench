@@ -73,3 +73,5 @@ class SharpeRatioMetric(Metric):
 
         return input_data[["date", "rolling_sharpe"]]
 
+
+

@@ -37,7 +37,7 @@ export default function HomePage() {
               Welcome back to the AI Workbench
             </h1>
             <p className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-gray-600">
-              You're signed in! Ready to continue building, testing, and deploying machine learning models for the Allora Network?
+              You&apos;re signed in! Ready to continue building, testing, and deploying machine learning models for the Allora Network?
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <a

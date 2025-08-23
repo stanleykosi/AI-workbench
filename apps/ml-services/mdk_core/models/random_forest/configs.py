@@ -26,3 +26,5 @@ class RandomForestConfig:
         print(f"  test_size: {self.test_size}")
         print(f"  scaler_feature_range: {self.scaler_feature_range}")
 
+
+

@@ -38,3 +38,5 @@ class ProphetConfig:
         print(f"  Periods: {self.periods}")
         print(f"  Remove Timezone: {self.remove_timezone}")
 
+
+

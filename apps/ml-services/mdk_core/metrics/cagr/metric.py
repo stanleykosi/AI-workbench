@@ -49,3 +49,5 @@ class CagrMetric(Metric):
 
         return cagr
 
+
+

@@ -14,3 +14,5 @@ class RegressionConfig:
         print("Regression Model Configuration:")
         print(f"  scaler_feature_range: {self.scaler_feature_range}")
 
+
+

@@ -52,3 +52,5 @@ class RegressionModel(Model):
         """Regression models do not forecast; return a dummy implementation."""
         return pd.DataFrame({"forecast": ["N/A"] * steps})
 
+
+

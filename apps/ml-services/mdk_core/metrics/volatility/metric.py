@@ -26,3 +26,5 @@ class VolatilityMetric(Metric):
 
         return volatility
 
+
+

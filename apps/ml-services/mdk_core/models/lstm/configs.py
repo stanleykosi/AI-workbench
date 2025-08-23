@@ -45,3 +45,5 @@ class LstmConfig:
         print(f"  Time Steps: {self.time_steps}")
         print(f"  Interval: {self.interval}")
 
+
+

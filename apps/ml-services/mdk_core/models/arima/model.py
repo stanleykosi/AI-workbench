@@ -101,3 +101,5 @@ class ArimaModel(Model):
         predictions = self.model.forecast(steps=steps)
         return pd.DataFrame(predictions)
 
+
+

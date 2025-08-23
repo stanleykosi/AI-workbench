@@ -37,3 +37,5 @@ class ArimaConfig:
         print(f"  Data Frequency: {self.frequency}")
         print(f"  Resampling Interval: {self.interval}")
 
+
+

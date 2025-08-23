@@ -26,3 +26,5 @@ class XgboostConfig:
         print(f"  early_stopping_rounds: {self.early_stopping_rounds}")
         print(f"  scaler_feature_range: {self.scaler_feature_range}")
 
+
+
