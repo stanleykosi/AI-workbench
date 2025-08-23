@@ -1,26 +1,51 @@
 /**
  * @description
  * This file implements the main server page for the "Experiments" section of a project.
- * Currently, it serves as a placeholder that provides the main entry point for users
- * to view their experiments and initiate new training runs.
+ * It is responsible for fetching the list of experiments and displaying them, while
+ * managing loading states with React Suspense.
  *
  * Key features:
- * - Provides a clear header with a title and description for the experiments section.
- * - Includes a "New Experiment" button that links to the guided training wizard.
- * - Establishes the foundational page for the experiment tracking feature.
+ * - Server Component: Fetches data securely on the server for improved performance.
+ * - Data Fetching: Uses `getExperimentsForProjectAction` to retrieve experiment records.
+ * - Suspense for Loading: Wraps the data-fetching component in `<Suspense>` to
+ *   show a skeleton loader, enhancing the user experience during data loads.
+ * - Component Composition: Orchestrates the page header and the `ExperimentsFetcher`
+ *   to build the complete page structure.
  *
  * @dependencies
- * - `next/link`: For client-side navigation to the new experiment page.
+ * - `react`: For `Suspense`.
+ * - `next/link`: For the "New Experiment" button link.
  * - `lucide-react`: For the icon on the "New Experiment" button.
  * - `@/components/ui/button`: The shadcn/ui button component.
- *
- * @notes
- * - The actual list of experiments will be fetched and displayed in a future step.
- *   This page will be updated to include a <Suspense> boundary and data fetching logic.
+ * - `@/actions/db/experiments-actions`: The server action for fetching experiments.
+ * - `./_components/experiments-list`: The client component to render the list.
+ * - `./_components/experiments-skeleton`: The skeleton loader for the fallback UI.
  */
+import { Suspense } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { getExperimentsForProjectAction } from "@/actions/db/experiments-actions";
 import { Button } from "@/components/ui/button";
+import { ExperimentsList } from "./_components/experiments-list";
+import { ExperimentsSkeleton } from "./_components/experiments-skeleton";
+
+/**
+ * An asynchronous component that fetches experiment data. It is designed to be
+ * rendered within a Suspense boundary.
+ *
+ * @param {{ projectId: string }} props - The component props.
+ * @returns {Promise<JSX.Element>} A promise resolving to the ExperimentsList component.
+ */
+async function ExperimentsFetcher({ projectId }: { projectId: string }) {
+  const { data: experiments, message } =
+    await getExperimentsForProjectAction(projectId);
+
+  if (!experiments) {
+    return <p className="text-destructive">{message}</p>;
+  }
+
+  return <ExperimentsList initialExperiments={experiments} />;
+}
 
 export default function ExperimentsPage({
   params,
@@ -45,14 +70,10 @@ export default function ExperimentsPage({
           </Link>
         </Button>
       </div>
-      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 p-12 text-center">
-        <h3 className="text-xl font-semibold tracking-tight">
-          No experiments yet
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Click &quot;New Experiment&quot; to start your first training run.
-        </p>
-      </div>
+
+      <Suspense fallback={<ExperimentsSkeleton />}>
+        <ExperimentsFetcher projectId={params.projectId} />
+      </Suspense>
     </div>
   );
 }
