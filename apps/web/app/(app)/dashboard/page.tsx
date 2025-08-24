@@ -21,6 +21,7 @@
 import React, { useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -28,6 +29,68 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  RocketIcon,
+  BarChartIcon,
+  GearIcon,
+  LightningBoltIcon,
+  ArrowRightIcon,
+  PlusIcon,
+  FileTextIcon,
+  ClockIcon
+} from "@radix-ui/react-icons";
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const quickActions = [
+  {
+    icon: PlusIcon,
+    title: "Create Project",
+    description: "Start a new AI project",
+    href: "/dashboard/projects",
+    color: "from-blue-500 to-blue-600"
+  },
+  {
+    icon: FileTextIcon,
+    title: "Upload Dataset",
+    description: "Add training data",
+    href: "/dashboard/projects",
+    color: "from-green-500 to-green-600"
+  },
+  {
+    icon: BarChartIcon,
+    title: "Run Experiment",
+    description: "Train a new model",
+    href: "/dashboard/projects",
+    color: "from-purple-500 to-purple-600"
+  },
+  {
+    icon: RocketIcon,
+    title: "Deploy Model",
+    description: "Deploy to production",
+    href: "/dashboard/projects",
+    color: "from-orange-500 to-orange-600"
+  }
+];
+
+const stats = [
+  { label: "Active Projects", value: "0", icon: RocketIcon, color: "text-blue-600" },
+  { label: "Datasets", value: "0", icon: FileTextIcon, color: "text-green-600" },
+  { label: "Experiments", value: "0", icon: BarChartIcon, color: "text-purple-600" },
+  { label: "Deployments", value: "0", icon: GearIcon, color: "text-orange-600" }
+];
 
 /**
  * Renders the main dashboard page for authenticated users.
@@ -45,7 +108,11 @@ export default function DashboardPage() {
   }, [isLoaded, isSignedIn, router]);
 
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
   if (!isSignedIn) {
@@ -53,28 +120,114 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
+    <motion.div
+      className="space-y-8"
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+    >
+      {/* Header */}
+      <motion.div className="space-y-2" variants={fadeInUp}>
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          Dashboard
+        </h1>
+        <p className="text-xl text-muted-foreground">
           Welcome to your AI Workbench. Here&apos;s a summary of your work.
         </p>
-      </div>
+      </motion.div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Welcome!</CardTitle>
-          <CardDescription>
-            This is your central hub for managing AI models for the Allora Network.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>
-            You can create a new project to get started, or select an existing one
-            from the sidebar to manage datasets, experiments, and deployments.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+      {/* Stats Grid */}
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        variants={fadeInUp}
+      >
+        {stats.map((stat, index) => (
+          <Card key={stat.label} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                </div>
+                <div className={`p-3 rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors`}>
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div className="space-y-4" variants={fadeInUp}>
+        <h2 className="text-2xl font-semibold text-gray-900">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickActions.map((action, index) => (
+            <Card
+              key={action.title}
+              className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 border-transparent hover:border-gray-200"
+              onClick={() => router.push(action.href)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-lg bg-gradient-to-r ${action.color} text-white`}>
+                    <action.icon className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {action.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{action.description}</p>
+                  </div>
+                  <ArrowRightIcon className="h-5 w-5 text-muted-foreground group-hover:text-blue-600 transition-colors group-hover:translate-x-1" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Welcome Card */}
+      <motion.div variants={fadeInUp}>
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-blue-900">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <RocketIcon className="h-6 w-6 text-blue-600" />
+              </div>
+              Welcome to AI Workbench!
+            </CardTitle>
+            <CardDescription className="text-blue-700">
+              Your central hub for managing AI models for the Allora Network.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-blue-800">
+                You can create a new project to get started, or select an existing one from the sidebar to manage datasets, experiments, and deployments.
+              </p>
+              <div className="flex items-center gap-2 text-blue-700">
+                <ClockIcon className="h-4 w-4" />
+                <span className="text-sm">Getting started takes just a few minutes</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Recent Activity Placeholder */}
+      <motion.div className="space-y-4" variants={fadeInUp}>
+        <h2 className="text-2xl font-semibold text-gray-900">Recent Activity</h2>
+        <Card>
+          <CardContent className="p-8">
+            <div className="text-center text-muted-foreground">
+              <BarChartIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-lg font-medium">No recent activity</p>
+              <p className="text-sm">Your projects and experiments will appear here</p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -18,9 +18,18 @@
  */
 "use client";
 
+import { motion } from "framer-motion";
+import { RocketIcon, PlusIcon } from "@radix-ui/react-icons";
+
 // The CreateProjectDialog will be a client component that handles the dialog state.
 // We will create this in the next step. For now, we import a placeholder.
 import { CreateProjectDialog } from "./create-project-dialog";
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 }
+};
 
 /**
  * Renders the page header for the Projects page.
@@ -29,14 +38,33 @@ import { CreateProjectDialog } from "./create-project-dialog";
  */
 export function PageHeader() {
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-        <p className="mt-1 text-muted-foreground">
-          Organize your models and datasets into projects.
+    <motion.div
+      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6"
+      variants={fadeInUp}
+      initial="initial"
+      animate="animate"
+    >
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg">
+            <RocketIcon className="h-6 w-6 text-blue-600" />
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            Projects
+          </h1>
+        </div>
+        <p className="text-xl text-muted-foreground max-w-2xl">
+          Organize your models and datasets into projects. Create, manage, and collaborate on AI initiatives with ease.
         </p>
       </div>
-      <CreateProjectDialog />
-    </div>
+
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <CreateProjectDialog />
+      </motion.div>
+    </motion.div>
   );
 }

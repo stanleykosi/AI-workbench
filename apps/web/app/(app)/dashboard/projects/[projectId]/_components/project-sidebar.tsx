@@ -26,12 +26,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   FileTextIcon,
   GearIcon,
   HomeIcon,
   RocketIcon,
   BarChartIcon,
+  ArrowLeftIcon,
+  FileIcon
 } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
@@ -42,6 +45,37 @@ interface ProjectSidebarProps {
   projectName: string;
 }
 
+const projectNavItems = [
+  {
+    href: "datasets",
+    label: "Datasets",
+    icon: FileTextIcon,
+    description: "Manage training data",
+    color: "from-green-500 to-green-600"
+  },
+  {
+    href: "experiments",
+    icon: BarChartIcon,
+    label: "Experiments",
+    description: "Track model training",
+    color: "from-purple-500 to-purple-600"
+  },
+  {
+    href: "deployments",
+    icon: RocketIcon,
+    label: "Deployments",
+    description: "Production endpoints",
+    color: "from-orange-500 to-orange-600"
+  },
+  {
+    href: "settings",
+    icon: GearIcon,
+    label: "Settings",
+    description: "Project configuration",
+    color: "from-gray-500 to-gray-600"
+  },
+];
+
 /**
  * Renders the navigation sidebar for a single project view.
  *
@@ -51,47 +85,119 @@ interface ProjectSidebarProps {
 export function ProjectSidebar({ projectId, projectName }: ProjectSidebarProps) {
   const pathname = usePathname();
 
-  const navItems = [
-    {
-      href: `/dashboard/projects/${projectId}/datasets`,
-      label: "Datasets",
-      icon: FileTextIcon,
-    },
-    {
-      href: `/dashboard/projects/${projectId}/experiments`,
-      label: "Experiments",
-      icon: BarChartIcon,
-    },
-    {
-      href: `/dashboard/projects/${projectId}/deployments`,
-      label: "Deployments",
-      icon: RocketIcon,
-    },
-    {
-      href: `/dashboard/projects/${projectId}/settings`,
-      label: "Settings",
-      icon: GearIcon,
-    },
-  ];
-
   return (
-    <nav className="grid gap-4 text-sm font-medium">
-      <div className="flex items-center gap-2 font-semibold text-lg">
-        <span>{projectName}</span>
-      </div>
-      {navItems.map((item) => (
+    <motion.nav
+      className="space-y-6 p-6 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200 shadow-sm"
+      initial={{ x: -20, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Project Header */}
+      <motion.div
+        className="space-y-4"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        {/* Back to Projects */}
         <Link
-          key={item.label}
-          href={item.href}
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-            pathname === item.href && "bg-muted text-primary",
-          )}
+          href="/dashboard/projects"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors group"
         >
-          <item.icon className="h-4 w-4" />
-          {item.label}
+          <ArrowLeftIcon className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Back to Projects</span>
         </Link>
-      ))}
-    </nav>
+
+        {/* Project Info */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+              <FileIcon className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 truncate">{projectName}</h2>
+              <p className="text-sm text-gray-500">Project Navigation</p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Navigation Items */}
+      <motion.div
+        className="space-y-2"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        {projectNavItems.map((item, index) => {
+          const fullHref = `/dashboard/projects/${projectId}/${item.href}`;
+          const isActive = pathname === fullHref;
+
+          return (
+            <motion.div
+              key={item.label}
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+            >
+              <Link
+                href={fullHref}
+                className={cn(
+                  "group flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5",
+                  isActive
+                    ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
+                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                )}
+              >
+                <div className={cn(
+                  "p-2.5 rounded-lg transition-all duration-200",
+                  isActive
+                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
+                    : `bg-gradient-to-r ${item.color} text-white group-hover:scale-110 group-hover:shadow-md`
+                )}>
+                  <item.icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold truncate">{item.label}</div>
+                  <div className="text-xs text-gray-500 truncate">{item.description}</div>
+                </div>
+                {isActive && (
+                  <motion.div
+                    className="w-2 h-2 bg-blue-500 rounded-full"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                )}
+              </Link>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+
+      {/* Project Stats */}
+      <motion.div
+        className="pt-6 border-t border-gray-200"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Project Overview
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-lg font-bold text-gray-900">0</div>
+              <div className="text-xs text-gray-500">Datasets</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-lg font-bold text-gray-900">0</div>
+              <div className="text-xs text-gray-500">Experiments</div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.nav>
   );
 }
