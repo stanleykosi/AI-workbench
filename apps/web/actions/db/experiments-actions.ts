@@ -6,6 +6,7 @@
  *
  * Key features:
  * - `getExperimentsForProjectAction`: Fetches all experiment records for a specific project.
+ * - `getExperimentByIdAction`: Fetches a single experiment by its ID, ensuring user ownership.
  *
  * @dependencies
  * - `@clerk/nextjs/server`: For `auth()` to get user and session details.
@@ -82,5 +83,61 @@ export async function getExperimentsForProjectAction(
       isSuccess: false,
       message: "Database Error: Failed to fetch experiments.",
     };
+  }
+}
+
+/**
+ * Fetches a single experiment by its ID, ensuring it belongs to the current user's project.
+ *
+ * @param experimentId - The ID of the experiment to fetch.
+ * @returns A promise that resolves to an `ActionState` containing the experiment or an error message.
+ */
+export async function getExperimentByIdAction(
+  experimentId: string,
+): Promise<ActionState<SelectExperiment>> {
+  const { userId } = auth();
+
+  if (!userId) {
+    return { isSuccess: false, message: "Unauthorized: You must be logged in." };
+  }
+  if (!experimentId) {
+    return { isSuccess: false, message: "Invalid experiment ID." };
+  }
+
+  try {
+    // This query joins the experiments table with the projects table to verify
+    // that the experiment belongs to a project owned by the current user.
+    const [result] = await db
+      .select({
+        id: experimentsTable.id,
+        projectId: experimentsTable.projectId,
+        datasetId: experimentsTable.datasetId,
+        temporalWorkflowId: experimentsTable.temporalWorkflowId,
+        status: experimentsTable.status,
+        modelConfig: experimentsTable.modelConfig,
+        performanceMetrics: experimentsTable.performanceMetrics,
+        modelArtifactS3Key: experimentsTable.modelArtifactS3Key,
+        createdAt: experimentsTable.createdAt,
+      })
+      .from(experimentsTable)
+      .innerJoin(projectsTable, eq(experimentsTable.projectId, projectsTable.id))
+      .where(
+        and(
+          eq(experimentsTable.id, experimentId),
+          eq(projectsTable.userId, userId),
+        ),
+      );
+
+    if (!result) {
+      return {
+        isSuccess: false,
+        message: "Experiment not found or you do not have permission.",
+      };
+    }
+
+    return { isSuccess: true, message: "Experiment fetched successfully.", data: result };
+  } catch (error) {
+    console.error(`Error fetching experiment ${experimentId}:`, error);
+    return { isSuccess: false, message: "Database Error: Failed to fetch experiment." };
   }
 }

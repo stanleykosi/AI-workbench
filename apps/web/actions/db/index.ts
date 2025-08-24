@@ -13,4 +13,8 @@ export {
   getDatasetsForProjectAction,
   getDatasetByIdAction,
 } from "./datasets-actions";
-export { getExperimentsForProjectAction } from "./experiments-actions";
+export {
+  getExperimentsForProjectAction,
+  getExperimentByIdAction,
+} from "./experiments-actions";
+export { getDeploymentsForProjectAction } from "./deployments-actions";
