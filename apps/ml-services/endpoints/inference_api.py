@@ -37,6 +37,10 @@ from pydantic import BaseModel, Field
 from mdk_core.models.base_model import Model as MdkModel
 from mdk_core.models.model_factory import ModelFactory
 
+# Import configuration and activity tracking
+from config import modal_config
+from activity_tracker import activity_tracker
+
 # --- Modal Configuration ---
 # Define the Modal app, which serves as a container for our functions and configurations.
 app = modal.App("ai-workbench-inference-endpoint")
@@ -200,6 +204,24 @@ class InferenceRequest(BaseModel):
     )
 
 
+@fastapi_app.get("/health")
+async def health_check():
+    """
+    Health check endpoint that provides scaling and activity information.
+    """
+    return {
+        "status": "healthy",
+        "scaling": {
+            "current_scaledown_window": modal_config.get_scaledown_window(activity_tracker.has_recent_activity()),
+            "base_warm_time": modal_config.base_warm_time,
+            "extension_time": modal_config.extension_time,
+            "max_containers": modal_config.max_containers,
+        },
+        "activity": activity_tracker.get_stats(),
+        "cached_models": list(model_cache.keys()),
+    }
+
+
 @fastapi_app.post("/predict/{experiment_id}")
 async def predict(
     experiment_id: str,
@@ -213,6 +235,9 @@ async def predict(
         raise HTTPException(status_code=400, detail="Input data cannot be empty.")
 
     try:
+        # Track activity for this experiment to optimize scaling
+        activity_tracker.record_activity(experiment_id)
+        
         # Convert the validated Pydantic models to a pandas DataFrame.
         input_df = pd.DataFrame([row.model_dump() for row in request.data])
 
@@ -241,8 +266,8 @@ async def predict(
 @app.function(
     image=image,
     secrets=[aws_secret, supabase_secret],
-    scaledown_window=300,  # Keep container warm for 5 minutes to reduce cold starts.
-    max_containers=10,  # Allow up to 10 concurrent requests.
+    scaledown_window=modal_config.get_scaledown_window(activity_tracker.has_recent_activity()),
+    max_containers=modal_config.max_containers,
 )
 @modal.asgi_app()
 def inference_endpoint():

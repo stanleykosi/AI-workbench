@@ -7,3 +7,4 @@ directory.
 """
 from .training_workflow import TrainModelWorkflow
 from .data_fetching_workflow import FetchDataWorkflow
+from .deployment_workflow import DeployModelWorkflow

@@ -5,11 +5,12 @@ It is designed to be called by workflows to reflect the outcome of various proce
 (e.g., model training, data fetching) in the Supabase database.
 
 Key components:
-- `UpdateExperimentParams`, `CreateDatasetRecordParams`: Dataclasses for type-safe inputs.
-- `update_experiment_status_activity`, `create_dataset_record_activity`: Temporal activities
-  that trigger database updates on Modal.
-- `_update_experiment_status`, `_create_dataset_record`: Modal functions containing the core
-  database interaction logic using `psycopg2`.
+- `UpdateExperimentParams`, `CreateDatasetRecordParams`, `UpdateDeploymentParams`: Dataclasses
+  for type-safe inputs.
+- `update_experiment_status_activity`, `create_dataset_record_activity`, `update_deployment_status_activity`:
+  Temporal activities that trigger database updates on Modal.
+- `_update_experiment_status`, `_create_dataset_record`, `_update_deployment_status`: Modal functions
+  containing the core database interaction logic using `psycopg2`.
 
 This separation keeps workflows deterministic and offloads database interactions
 to a secure, isolated Modal environment.
@@ -48,6 +49,13 @@ class CreateDatasetRecordParams:
     s3_key: str
     status: str = "ready"
 
+@dataclasses.dataclass
+class UpdateDeploymentParams:
+    """Input parameters for updating a deployment."""
+    deployment_id: str
+    status: str
+    modal_endpoint_url: str | None = None
+
 
 # --- Temporal Activity Definitions ---
 
@@ -69,6 +77,15 @@ async def create_dataset_record_activity(params: CreateDatasetRecordParams) -> N
     activity.heartbeat()
     await _create_dataset_record.remote.aio(params)
 
+@activity.defn
+async def update_deployment_status_activity(params: UpdateDeploymentParams) -> None:
+    """
+    Temporal Activity to update a deployment's status in the database.
+    Offloads the actual database write operation to a Modal function.
+    """
+    activity.heartbeat()
+    await _update_deployment_status.remote.aio(params)
+
 
 # --- Modal Function (The actual implementation) ---
 @app.function(image=image, secrets=[supabase_secret], timeout=60)
@@ -79,44 +96,31 @@ def _update_experiment_status(params: UpdateExperimentParams) -> None:
     print(f"Updating experiment {params.experiment_id} to status: {params.status}")
 
     conn = None
-    cur = None
     try:
         # Connect to the Supabase database using the connection string from the secret.
         conn = psycopg2.connect(os.environ["SUPABASE_DATABASE_URL"])
-        cur = conn.cursor()
+        with conn.cursor() as cur:
+            # Build the UPDATE query dynamically based on the provided parameters.
+            # This prevents SQL injection by using parameterized queries.
+            query_parts = ["UPDATE experiments SET status = %s"]
+            query_params = [params.status]
 
-        # Build the UPDATE query dynamically based on the provided parameters.
-        # This prevents SQL injection by using parameterized queries.
-        query_parts = ["UPDATE experiments SET status = %s"]
-        query_params = [params.status]
+            if params.status == "completed" and params.model_artifact_s3_key:
+                query_parts.append(", model_artifact_s3_key = %s")
+                query_params.append(params.model_artifact_s3_key)
 
-        if params.status == "completed" and params.model_artifact_s3_key:
-            query_parts.append(", model_artifact_s3_key = %s")
-            query_params.append(params.model_artifact_s3_key)
-            # Future enhancement: Update performance metrics as well
-            # query_parts.append(", performance_metrics = %s")
-            # query_params.append(json.dumps(params.performance_metrics))
+            query_parts.append("WHERE id = %s")
+            query_params.append(params.experiment_id)
 
-        query_parts.append("WHERE id = %s")
-        query_params.append(params.experiment_id)
-
-        query = " ".join(query_parts)
-
-        # Execute the query and commit the transaction.
-        cur.execute(query, tuple(query_params))
-        conn.commit()
-
+            query = " ".join(query_parts)
+            cur.execute(query, tuple(query_params))
+            conn.commit()
         print(f"Successfully updated experiment {params.experiment_id}")
 
     except Exception as e:
         print(f"Database Error: Failed to update experiment {params.experiment_id}. Error: {e}")
-        # Raising an exception will cause the Temporal activity to fail,
-        # which can be handled by the calling workflow.
         raise
     finally:
-        # Ensure database resources are always released.
-        if cur:
-            cur.close()
         if conn:
             conn.close()
 
@@ -137,6 +141,35 @@ def _create_dataset_record(params: CreateDatasetRecordParams) -> None:
         print(f"Successfully created dataset record: {params.name}")
     except Exception as e:
         print(f"Database Error: Failed to create dataset record for {params.name}. Error: {e}")
+        raise
+    finally:
+        if conn:
+            conn.close()
+
+@app.function(image=image, secrets=[supabase_secret], timeout=60)
+def _update_deployment_status(params: UpdateDeploymentParams) -> None:
+    """The core logic for updating a deployment record, executed in a Modal container."""
+    print(f"Updating deployment {params.deployment_id} to status {params.status}")
+    conn = None
+    try:
+        conn = psycopg2.connect(os.environ["SUPABASE_DATABASE_URL"])
+        with conn.cursor() as cur:
+            query_parts = ["UPDATE deployments SET status = %s"]
+            query_params = [params.status]
+
+            if params.modal_endpoint_url:
+                query_parts.append(", modal_endpoint_url = %s")
+                query_params.append(params.modal_endpoint_url)
+
+            query_parts.append("WHERE id = %s")
+            query_params.append(params.deployment_id)
+
+            query = " ".join(query_parts)
+            cur.execute(query, tuple(query_params))
+            conn.commit()
+        print(f"Successfully updated deployment {params.deployment_id} to status {params.status}")
+    except Exception as e:
+        print(f"Database Error: Failed to update deployment {params.deployment_id}. Error: {e}")
         raise
     finally:
         if conn:

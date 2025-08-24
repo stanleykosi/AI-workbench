@@ -10,3 +10,4 @@
 
 export { startTrainingAction } from "./training-actions";
 export { startDataFetchingAction } from "./data-fetching-actions";
+export { startDeploymentAction } from "./deployment-actions";

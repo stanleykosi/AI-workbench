@@ -9,5 +9,7 @@ from .training_activity import train_model_activity
 from .db_update_activity import (
     update_experiment_status_activity,
     create_dataset_record_activity,
+    update_deployment_status_activity,
 )
 from .data_fetching_activity import fetch_data_activity
+from .deployment_activity import deploy_model_activity
