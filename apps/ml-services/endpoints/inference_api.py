@@ -211,6 +211,12 @@ async def health_check():
     """
     return {
         "status": "healthy",
+        "authentication": {
+            "mode": "production" if modal_config.is_production else "development",
+            "modal_authenticated": modal_config.is_production,
+            "token_id_set": bool(modal_config.token_id),
+            "token_secret_set": bool(modal_config.token_secret),
+        },
         "scaling": {
             "current_scaledown_window": modal_config.get_scaledown_window(activity_tracker.has_recent_activity()),
             "base_warm_time": modal_config.base_warm_time,

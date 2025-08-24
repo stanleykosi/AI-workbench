@@ -2,6 +2,22 @@
 
 This document explains how to configure the hybrid scaling behavior for the Modal inference endpoints.
 
+## 🔐 **Authentication Modes**
+
+The system automatically detects your deployment environment:
+
+### **Development Mode (Default):**
+- **No `MODAL_TOKEN`** set
+- **Uses web authentication** (`modal auth`)
+- **Suitable for** local development and testing
+- **Console output**: `🔧 Development mode: Using web authentication`
+
+### **Production Mode:**
+- **`MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET`** environment variables set
+- **Uses token ID and secret authentication**
+- **Required for** containerized deployments
+- **Console output**: `🚀 Production mode: Using Modal token ID and secret`
+
 ## 🚀 **Hybrid Scaling Strategy**
 
 The inference endpoint uses a **hybrid approach** that automatically adjusts container warm-up times based on recent activity:
@@ -23,6 +39,8 @@ Copy `env_template.txt` to `.env` and customize these values:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `MODAL_TOKEN_ID` | `None` | **Required for production** - Modal token ID |
+| `MODAL_TOKEN_SECRET` | `None` | **Required for production** - Modal token secret |
 | `MODAL_BASE_WARM_TIME` | `900` | Base warm time in seconds (15 min) |
 | `MODAL_EXTENSION_TIME` | `900` | Extension time when active (15 min) |
 | `MODAL_MAX_CONTAINERS` | `10` | Maximum concurrent containers |

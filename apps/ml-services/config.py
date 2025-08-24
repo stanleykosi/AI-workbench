@@ -11,6 +11,13 @@ class ModalConfig:
     """Configuration class for Modal inference endpoint settings."""
     
     def __init__(self):
+        # Authentication
+        self.token_id = os.getenv("MODAL_TOKEN_ID")
+        self.token_secret = os.getenv("MODAL_TOKEN_SECRET")
+        
+        # Check if we're in production mode
+        self.is_production = bool(self.token_id and self.token_secret)
+        
         # Base warm time in seconds (default: 15 minutes)
         self.base_warm_time = int(os.getenv("MODAL_BASE_WARM_TIME", "900"))
         
@@ -22,6 +29,12 @@ class ModalConfig:
         
         # Activity tracking window in seconds (default: 5 minutes)
         self.activity_window = int(os.getenv("MODAL_ACTIVITY_WINDOW", "300"))
+        
+        # Log the current mode
+        if self.is_production:
+            print("🚀 Production mode: Using Modal token ID and secret")
+        else:
+            print("🔧 Development mode: Using web authentication")
     
     def get_scaledown_window(self, has_recent_activity: bool = False) -> int:
         """
@@ -40,6 +53,7 @@ class ModalConfig:
     def __repr__(self) -> str:
         return (
             f"ModalConfig("
+            f"mode={'production' if self.is_production else 'development'}, "
             f"base_warm_time={self.base_warm_time}s, "
             f"extension_time={self.extension_time}s, "
             f"max_containers={self.max_containers}, "
