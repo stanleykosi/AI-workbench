@@ -69,6 +69,7 @@ export default function SignUpPage() {
           <div className="flex justify-center">
             <SignUp
               redirectUrl="/dashboard"
+              signInUrl="/sign-in"
               appearance={{
                 variables: {
                   colorPrimary: "#2563eb",
@@ -78,7 +79,7 @@ export default function SignUpPage() {
                   colorText: "#374151",
                   colorTextSecondary: "#6b7280",
                   borderRadius: "0.5rem",
-                  fontFamily: '"Inter", sans-serif'
+                  fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
                 }
               }}
             />
