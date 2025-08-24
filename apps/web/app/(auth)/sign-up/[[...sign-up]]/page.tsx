@@ -40,59 +40,64 @@ const fadeInUp = {
  */
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(156,146,172,0.1)_1px,transparent_0)] bg-[length:20px_20px]" />
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-900 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 -translate-x-1/4 -translate-y-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full opacity-30 blur-3xl hidden sm:block" />
+      <div className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-full opacity-30 blur-3xl hidden sm:block" />
 
-      <motion.div
-        className="relative z-10 w-full max-w-md"
-        variants={fadeInUp}
-        initial="initial"
-        animate="animate"
-      >
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl mb-4 shadow-md">
-            <RocketIcon className="h-8 w-8 text-blue-600" />
+      <div className="flex flex-col justify-center items-center min-h-screen p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8 z-10">
+          <motion.div
+            className="text-center"
+            variants={fadeInUp}
+            initial="initial"
+            animate="animate"
+          >
+            <div className="inline-block mb-3 sm:mb-4 hover:scale-105 transition-transform duration-300">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border border-blue-500/30 shadow-lg shadow-blue-500/20 bg-white/50 flex items-center justify-center">
+                <RocketIcon className="h-8 w-8 text-blue-600" />
+              </div>
+            </div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Create your AI Workbench Account
+            </h1>
+            <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
+              Sign up to get started
+            </p>
+          </motion.div>
+
+          <div className="flex justify-center">
+            <SignUp
+              redirectUrl="/dashboard"
+              appearance={{
+                variables: {
+                  colorPrimary: "#2563eb",
+                  colorBackground: "#ffffff",
+                  colorInputBackground: "#ffffff",
+                  colorInputText: "#111827",
+                  colorText: "#374151",
+                  colorTextSecondary: "#6b7280",
+                  borderRadius: "0.5rem",
+                  fontFamily: '"Inter", sans-serif'
+                }
+              }}
+            />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
-          <p className="text-gray-600">Join the AI Workbench platform</p>
-        </div>
 
-        {/* Sign Up Form */}
-        <SignUp
-          redirectUrl="/dashboard"
-          appearance={{
-            variables: {
-              colorPrimary: "#2563eb",
-              colorBackground: "#ffffff",
-              colorInputBackground: "#ffffff",
-              colorInputText: "#111827",
-              colorText: "#374151",
-              colorTextSecondary: "#6b7280",
-              borderRadius: "0.75rem",
-              fontFamily: '"Inter", sans-serif'
-            },
-            elements: {
-              rootBox: "w-full",
-              card: "w-full bg-white rounded-2xl border border-gray-200 shadow-xl",
-              header: "hidden",
-              socialButtons: "mb-4",
-              socialButtonsBlockButton: "w-full bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all duration-200 rounded-lg py-3 px-4 text-sm font-medium shadow-sm hover:shadow-md",
-              dividerRow: "my-4",
-              formFieldRow: "mb-4",
-              formFieldInput: "w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white",
-              formFieldLabel: "text-gray-700 font-medium text-sm mb-2 block",
-              formButtonPrimary: "w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 hover:shadow-lg border-none",
-              footer: "bg-transparent mt-6",
-              footerAction: "text-center text-sm",
-              footerActionLink: "text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors",
-            },
-            layout: {
-              socialButtonsPlacement: "top"
-            }
-          }}
-        />
-      </motion.div>
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
+            {[
+              { icon: "🔒", text: 'Secure' },
+              { icon: "⚡", text: 'Fast' },
+              { icon: "🚀", text: 'Modern' },
+            ].map((item, index) => (
+              <div key={index} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 transition-colors duration-300">
+                <span className="text-lg sm:text-xl mb-1">{item.icon}</span>
+                <span className="text-xs sm:text-sm font-medium">{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
