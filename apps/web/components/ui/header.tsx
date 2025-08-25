@@ -8,36 +8,11 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center">
             <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl">
               <RocketIcon className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              AI Workbench
-            </span>
           </Link>
-
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="#features" 
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-            >
-              Features
-            </Link>
-            <Link 
-              href="#about" 
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-            >
-              About
-            </Link>
-            <Link 
-              href="#contact" 
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-200 font-medium"
-            >
-              Contact
-            </Link>
-          </nav>
 
           {/* Auth Buttons */}
           <div className="flex items-center space-x-3">

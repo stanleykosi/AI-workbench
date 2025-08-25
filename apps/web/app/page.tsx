@@ -23,7 +23,7 @@ export default function HomePage() {
       <SignedIn>
         <div className="min-h-screen bg-white">
           <Header />
-          <main className="pt-16">
+          <main className="pt-24">
             <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-gray-100" />
               <div className="relative z-10 text-center px-4">

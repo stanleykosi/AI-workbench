@@ -5,7 +5,7 @@ import { RocketIcon, ArrowRightIcon } from "@radix-ui/react-icons";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white pt-16">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white pt-24">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(156,146,172,0.08)_1px,transparent_0)] bg-[length:24px_24px]" />
@@ -16,16 +16,7 @@ export function HeroSection() {
       <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000" />
 
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="mb-8"
-        >
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl mb-6 shadow-lg">
-            <RocketIcon className="h-10 w-10 text-blue-600" />
-          </div>
-        </motion.div>
+
 
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
