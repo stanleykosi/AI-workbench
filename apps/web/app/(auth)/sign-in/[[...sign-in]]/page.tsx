@@ -54,11 +54,7 @@ export default function SignInPage() {
             initial="initial"
             animate="animate"
           >
-            <div className="inline-block mb-3 sm:mb-4 hover:scale-105 transition-transform duration-300">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border border-blue-500/30 shadow-lg shadow-blue-500/20 bg-white/50 flex items-center justify-center">
-                <RocketIcon className="h-8 w-8 text-blue-600" />
-              </div>
-            </div>
+
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Welcome back to AI Workbench
             </h1>

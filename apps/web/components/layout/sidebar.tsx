@@ -72,11 +72,11 @@ export function Sidebar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <Link href="/dashboard" className="flex items-center gap-3 font-semibold group">
-          <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg group-hover:scale-110 transition-transform duration-200">
-            <RocketIcon className="h-6 w-6 text-white" />
+        <Link href="/dashboard" className="flex items-center gap-1 font-semibold group">
+          <div className="p-2 group-hover:scale-110 transition-transform duration-200">
+            <img src="/icon.svg" alt="AI Workbench" className="h-12 w-12" />
           </div>
-          <span className="text-lg text-gray-900">AI Workbench</span>
+          <span className="text-lg font-bold text-gray-900">AI Workbench</span>
         </Link>
       </motion.div>
 

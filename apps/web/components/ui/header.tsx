@@ -9,8 +9,8 @@ export function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl">
-              <RocketIcon className="h-6 w-6 text-white" />
+            <div className="flex items-center justify-center w-14 h-14">
+              <img src="/icon.svg" alt="AI Workbench" className="h-12 w-12" />
             </div>
           </Link>
 

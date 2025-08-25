@@ -8,8 +8,8 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           {/* Left Section - Branding and Copyright */}
           <div className="flex items-center space-x-3 mb-4 md:mb-0">
-            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl">
-              <RocketIcon className="h-6 w-6 text-white" />
+            <div className="flex items-center justify-center w-14 h-14">
+              <img src="/icon.svg" alt="AI Workbench" className="h-12 w-12" />
             </div>
             <div>
               <span className="text-xl font-bold text-gray-700">

@@ -31,6 +31,11 @@ export const metadata: Metadata = {
   title: "AI Workbench",
   description:
     "A comprehensive platform to build, test, and deploy AI models for the Allora Network.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
