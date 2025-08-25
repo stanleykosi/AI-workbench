@@ -9,7 +9,7 @@ export function HeroSection() {
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(156,146,172,0.08)_1px,transparent_0)] bg-[length:24px_24px]" />
-      
+
       {/* Floating Elements */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" />
       <div className="absolute top-40 right-10 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000" />
@@ -61,7 +61,7 @@ export function HeroSection() {
             Get Started
             <ArrowRightIcon className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
           </Link>
-          
+
           <Link
             href="/sign-in"
             className="px-8 py-4 text-gray-700 font-medium hover:text-gray-900 transition-colors duration-200 border border-gray-300 rounded-xl hover:border-gray-400"
@@ -75,30 +75,30 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
+          className="mt-16 mb-24 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
         >
           <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-sm">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <RocketIcon className="h-6 w-6 text-blue-600" />
+              <span className="text-2xl">🤖</span>
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Build</h3>
-            <p className="text-gray-600 text-sm">Create sophisticated ML models with our intuitive tools</p>
+            <h3 className="font-semibold text-gray-900 mb-2">ML Model Development</h3>
+            <p className="text-gray-600 text-sm">Build and train machine learning models with our comprehensive development tools and frameworks</p>
           </div>
-          
+
           <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-sm">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <RocketIcon className="h-6 w-6 text-purple-600" />
+              <span className="text-2xl">🧪</span>
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Test</h3>
-            <p className="text-gray-600 text-sm">Validate and optimize your models with comprehensive testing</p>
+            <h3 className="font-semibold text-gray-900 mb-2">Model Testing & Validation</h3>
+            <p className="text-gray-600 text-sm">Comprehensive testing suite for model validation, performance analysis, and quality assurance</p>
           </div>
-          
+
           <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-sm">
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <RocketIcon className="h-6 w-6 text-green-600" />
+              <span className="text-2xl">🚀</span>
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Deploy</h3>
-            <p className="text-gray-600 text-sm">Seamlessly deploy models to production environments</p>
+            <h3 className="font-semibold text-gray-900 mb-2">Allora Network Integration</h3>
+            <p className="text-gray-600 text-sm">Seamlessly deploy and integrate your models with the Allora Network infrastructure</p>
           </div>
         </motion.div>
       </div>
