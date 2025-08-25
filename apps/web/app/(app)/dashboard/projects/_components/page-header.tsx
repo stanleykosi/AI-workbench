@@ -46,9 +46,6 @@ export function PageHeader() {
     >
       <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg">
-            <RocketIcon className="h-6 w-6 text-blue-600" />
-          </div>
           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
             Projects
           </h1>

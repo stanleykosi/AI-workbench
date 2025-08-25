@@ -14,21 +14,7 @@ export function Header() {
             </div>
           </Link>
 
-          {/* Auth Buttons */}
-          <div className="flex items-center space-x-3">
-            <Link
-              href="/sign-in"
-              className="px-4 py-2 text-gray-700 font-medium hover:text-gray-900 transition-colors duration-200"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/sign-up"
-              className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-              Get Started
-            </Link>
-          </div>
+
         </div>
       </div>
     </header>

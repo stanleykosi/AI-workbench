@@ -62,9 +62,6 @@ export default function SignInPage() {
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Welcome back to AI Workbench
             </h1>
-            <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">
-              Sign in to your account
-            </p>
           </motion.div>
 
           <div className="flex justify-center">
@@ -86,18 +83,7 @@ export default function SignInPage() {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center">
-            {[
-              { icon: "🔒", text: 'Secure' },
-              { icon: "⚡", text: 'Fast' },
-              { icon: "🚀", text: 'Modern' },
-            ].map((item, index) => (
-              <div key={index} className="flex flex-col items-center justify-center text-gray-600 hover:text-blue-600 transition-colors duration-300">
-                <span className="text-lg sm:text-xl mb-1">{item.icon}</span>
-                <span className="text-xs sm:text-sm font-medium">{item.text}</span>
-              </div>
-            ))}
-          </div>
+
         </div>
       </div>
     </div>

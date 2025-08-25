@@ -187,33 +187,7 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Welcome Card */}
-      <motion.div variants={fadeInUp}>
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-blue-900">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <RocketIcon className="h-6 w-6 text-blue-600" />
-              </div>
-              Welcome to AI Workbench!
-            </CardTitle>
-            <CardDescription className="text-blue-700">
-              Your central hub for managing AI models for the Allora Network.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-blue-800">
-                You can create a new project to get started, or select an existing one from the sidebar to manage datasets, experiments, and deployments.
-              </p>
-              <div className="flex items-center gap-2 text-blue-700">
-                <ClockIcon className="h-4 w-4" />
-                <span className="text-sm">Getting started takes just a few minutes</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+
 
       {/* Recent Activity Placeholder */}
       <motion.div className="space-y-4" variants={fadeInUp}>
