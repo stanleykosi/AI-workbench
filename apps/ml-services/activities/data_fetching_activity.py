@@ -15,9 +15,6 @@ from pathlib import Path
 import tempfile
 from datetime import datetime
 
-import boto3
-import pandas as pd
-import requests
 from temporalio import activity
 
 # --- Dataclass for Type Safety ---
@@ -58,6 +55,11 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
     tiingo_api_key = os.environ.get("TIINGO_API_KEY")
     if not tiingo_api_key:
         raise ValueError("TIINGO_API_KEY environment variable not set")
+
+    # Defer heavy imports to function scope to avoid workflow sandbox issues
+    import boto3
+    import pandas as pd
+    import requests
 
     # Initialize S3 client
     s3_client = boto3.client(

@@ -15,12 +15,7 @@ import os
 from pathlib import Path
 import tempfile
 
-import boto3
-import pandas as pd
 from temporalio import activity
-
-# Import the refactored MDK training function
-from mdk_core.trainer import run_training
 
 # --- Dataclass Definitions for Type Safety ---
 
@@ -63,6 +58,11 @@ async def train_model_activity(
     """
     activity.heartbeat()
     print(f"🚀 Starting training for experiment: {params.experiment_id}")
+
+    # Defer heavy imports to function scope to avoid workflow sandbox issues
+    import boto3
+    import pandas as pd
+    from mdk_core.trainer import run_training
 
     # Initialize S3 client using credentials from environment
     s3_client = boto3.client(

@@ -14,9 +14,6 @@ import dataclasses
 import os
 from temporalio import activity
 
-# Import the inference API app for deployment
-from endpoints.inference_api import app as inference_api_app
-
 # --- Dataclass Definitions for Type Safety ---
 
 @dataclasses.dataclass
@@ -60,6 +57,9 @@ async def deploy_model_activity(
     deployment_name = f"inference-ep--{safe_experiment_id}"
 
     print(f"🔧 Creating deployment with name: {deployment_name}")
+
+    # Defer import to avoid pulling Modal/ASGI app into workflow sandbox
+    from endpoints.inference_api import app as inference_api_app
 
     # Programmatically deploy the FastAPI app defined in `inference_api.py`.
     # The `name` parameter makes this a persistent, named deployment.

@@ -30,6 +30,16 @@ if (!process.env.TEMPORAL_SERVER_URL) {
   throw new Error("Missing environment variable: TEMPORAL_SERVER_URL");
 }
 
+// In production (Vercel), require namespace and API key for Temporal Cloud
+if (process.env.NODE_ENV === "production") {
+  if (!process.env.TEMPORAL_NAMESPACE) {
+    throw new Error("Missing environment variable: TEMPORAL_NAMESPACE");
+  }
+  if (!process.env.TEMPORAL_API_KEY) {
+    throw new Error("Missing environment variable: TEMPORAL_API_KEY");
+  }
+}
+
 // Type definition for the global object to include our singleton client.
 // This helps with TypeScript type checking for the global cache.
 declare global {
@@ -46,10 +56,13 @@ const temporalClient: Client =
   new Client({
     connection: Connection.lazy({
       address: process.env.TEMPORAL_SERVER_URL,
+      // For Temporal Cloud, enable TLS and pass API key when provided
+      ...(process.env.TEMPORAL_API_KEY
+        ? { tls: {}, apiKey: process.env.TEMPORAL_API_KEY }
+        : {}),
     }),
-    // The namespace must match the namespace on the Temporal server.
-    // 'default' is the standard namespace for local development.
-    namespace: "default",
+    // Namespace: use provided or default for local dev
+    namespace: process.env.TEMPORAL_NAMESPACE || "default",
   });
 
 // In a non-production environment, we assign the client to the global object.
