@@ -228,19 +228,26 @@ class LstmModel(Model):
         """Forecast future values based on the last known data."""
         self.model.eval()
 
-        if "date" in last_known_data.columns:
-            last_known_data["date"] = pd.to_datetime(last_known_data["date"])
-            last_known_data = last_known_data.set_index("date")
+        # Create a copy to avoid SettingWithCopyWarning
+        data_copy = last_known_data.copy()
+        
+        if "date" in data_copy.columns:
+            data_copy["date"] = pd.to_datetime(data_copy["date"])
+            data_copy = data_copy.set_index("date")
 
-        last_known_data = last_known_data.resample(self.config.interval).mean().dropna()
+        # Resample data and drop NaN values
+        data_copy = data_copy.resample(self.config.interval).mean().dropna()
+        
+        print(f"📊 Original data: {len(last_known_data)} rows, After resampling: {len(data_copy)} rows")
+        print(f"📊 Required time_steps: {self.config.time_steps}")
 
-        if len(last_known_data) < self.config.time_steps:
+        if len(data_copy) < self.config.time_steps:
             raise ValueError(
-                f"Not enough data to generate a forecast. Required at least {self.config.time_steps} data points."
+                f"Not enough data to generate a forecast. Required at least {self.config.time_steps} data points, got {len(data_copy)} after resampling."
             )
 
         close_prices_scaled = self.scaler.transform(
-            last_known_data["close"].values.astype(float).reshape(-1, 1)
+            data_copy["close"].values.astype(float).reshape(-1, 1)
         )
 
         last_sequence = close_prices_scaled[-self.config.time_steps :].reshape(
@@ -262,7 +269,7 @@ class LstmModel(Model):
         predictions_unscaled = self.scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
         
         forecast_dates = pd.date_range(
-            start=last_known_data.index[-1] + pd.Timedelta(days=1),
+            start=data_copy.index[-1] + pd.Timedelta(days=1),
             periods=steps,
             freq=self.config.interval,
         )
