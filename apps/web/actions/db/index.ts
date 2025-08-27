@@ -18,3 +18,6 @@ export {
   getExperimentByIdAction,
 } from "./experiments-actions";
 export { getDeploymentsForProjectAction } from "./deployments-actions";
+export {
+  getDashboardCountsAction,
+} from "./dashboard-actions";

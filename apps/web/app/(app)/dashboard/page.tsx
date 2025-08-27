@@ -18,7 +18,7 @@
  */
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -30,15 +30,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  RocketIcon,
   BarChartIcon,
-  GearIcon,
-  LightningBoltIcon,
   ArrowRightIcon,
   PlusIcon,
   FileTextIcon,
-  ClockIcon
 } from "@radix-ui/react-icons";
+import { DashboardStatsFetcher } from "./_components/dashboard-stats-fetcher";
+import { DashboardStatsSkeleton } from "./_components/dashboard-stats";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -85,12 +83,7 @@ const quickActions = [
   }
 ];
 
-const stats = [
-  { label: "Active Projects", value: "0", icon: RocketIcon, color: "text-blue-600" },
-  { label: "Datasets", value: "0", icon: FileTextIcon, color: "text-green-600" },
-  { label: "Experiments", value: "0", icon: BarChartIcon, color: "text-purple-600" },
-  { label: "Deployments", value: "0", icon: GearIcon, color: "text-orange-600" }
-];
+
 
 /**
  * Renders the main dashboard page for authenticated users.
@@ -137,25 +130,10 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Stats Grid */}
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-        variants={fadeInUp}
-      >
-        {stats.map((stat, index) => (
-          <Card key={stat.label} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                </div>
-                <div className={`p-3 rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <motion.div variants={fadeInUp}>
+        <Suspense fallback={<DashboardStatsSkeleton />}>
+          <DashboardStatsFetcher />
+        </Suspense>
       </motion.div>
 
       {/* Quick Actions */}
