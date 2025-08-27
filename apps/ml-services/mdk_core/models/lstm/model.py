@@ -296,8 +296,12 @@ class LstmModel(Model):
                 predictions.append(predicted_scaled.cpu().numpy().flatten()[0])
                 
                 # Append prediction and slide window
-                new_sequence_np = np.append(current_sequence.numpy()[0,1:], [[predicted_scaled.cpu().numpy()[0]]], axis=0)
-                current_sequence = torch.tensor(new_sequence_np, dtype=torch.float32).unsqueeze(0)
+                # Get the current sequence without the first element
+                current_seq_np = current_sequence.numpy()[0, 1:, 0]  # Shape: (time_steps-1,)
+                # Append the new prediction
+                new_sequence_np = np.append(current_seq_np, predicted_scaled.cpu().numpy()[0])
+                # Reshape to (1, time_steps, 1) for the LSTM
+                current_sequence = torch.tensor(new_sequence_np.reshape(1, -1, 1), dtype=torch.float32)
 
 
         predictions_unscaled = self.scaler.inverse_transform(np.array(predictions).reshape(-1, 1))

@@ -231,7 +231,7 @@ def load_model(experiment_id: str):
         # 4. Instantiate and load the model using the MDK factory.
         try:
             factory = ModelFactory()
-            model_instance = factory.create_model(model_name)
+            model_instance = factory.create_model(model_name, config=model_config)
 
             # The model's `load` method needs the parent directory of the artifacts.
             model_instance.save_dir = temp_dir
