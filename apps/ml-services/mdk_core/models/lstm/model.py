@@ -184,16 +184,19 @@ class LstmModel(Model):
     def inference(self, input_data: pd.DataFrame, time_steps=None) -> pd.DataFrame:
         self.model.eval()
 
-        if "date" in input_data.columns:
-            input_data["date"] = pd.to_datetime(input_data["date"])
-            input_data = input_data.set_index("date")
+        # Create a copy to avoid SettingWithCopyWarning
+        data_copy = input_data.copy()
+        
+        if "date" in data_copy.columns:
+            data_copy["date"] = pd.to_datetime(data_copy["date"])
+            data_copy = data_copy.set_index("date")
 
-        input_data = input_data.resample(self.config.interval).mean().dropna()
+        data_copy = data_copy.resample(self.config.interval).mean().dropna()
         
         time_steps = self.config.time_steps if time_steps is None else time_steps
 
         close_prices_scaled = self.scaler.transform(
-            input_data["close"].values.astype(float).reshape(-1, 1)
+            data_copy["close"].values.astype(float).reshape(-1, 1)
         )
 
         x_test, _ = self._prepare_data(close_prices_scaled)
@@ -209,7 +212,7 @@ class LstmModel(Model):
         predictions = self.scaler.inverse_transform(predictions_scaled.cpu().numpy())
         
         # Align predictions with the correct dates
-        prediction_dates = input_data.index[time_steps:]
+        prediction_dates = data_copy.index[time_steps:]
         
         df_predictions = pd.DataFrame(
             {
