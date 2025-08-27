@@ -66,7 +66,8 @@ image = (
 
 @app.function(
     image=image,
-    timeout=3600,  # 1 hour timeout
+    gpu="T4",  # Enable GPU for all workers, will fall back to CPU if not needed
+    timeout=7200,  # 2 hour timeout (longer for GPU training)
     secrets=[
         modal.Secret.from_name("ai-workbench-aws-secret"),
         modal.Secret.from_name("ai-workbench-supabase-secret"),
@@ -86,6 +87,18 @@ async def start_worker():
     
     print("🚀 Starting Temporal worker on Modal...")
     print("📁 Using mounted directory: /app")
+    
+    # Check GPU availability
+    try:
+        import torch
+        if torch.cuda.is_available():
+            print(f"🎮 GPU detected: {torch.cuda.get_device_name(0)}")
+            print(f"🎯 GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
+            print("✅ GPU will be used for LSTM/GRU/Transformer models")
+        else:
+            print("💻 No GPU detected, will use CPU for all models")
+    except ImportError:
+        print("💻 PyTorch not available, will use CPU for all models")
     
     # Debug: verify contents of the mounted directory
     try:

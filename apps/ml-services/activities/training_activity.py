@@ -77,6 +77,34 @@ async def train_model_activity(
 
     model_name = params.model_config.get("modelName", "default_model")
 
+    # Set GPU configuration for LSTM models, CPU for others
+    if model_name.lower() in ["lstm", "gru", "transformer"]:
+        print(f"🚀 GPU training enabled for {model_name} model")
+        print("🎮 Using T4 GPU for deep learning training")
+        # Set environment variables for GPU training
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # Use first GPU
+        os.environ["MODAL_GPU"] = "True"
+        
+        # Verify GPU availability
+        try:
+            import torch
+            if torch.cuda.is_available():
+                print(f"✅ GPU detected: {torch.cuda.get_device_name(0)}")
+                print(f"🎯 GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
+            else:
+                print("⚠️ GPU not available, falling back to CPU")
+                os.environ["CUDA_VISIBLE_DEVICES"] = ""
+                os.environ["MODAL_GPU"] = "False"
+        except ImportError:
+            print("⚠️ PyTorch not available, using CPU")
+            os.environ["CUDA_VISIBLE_DEVICES"] = ""
+            os.environ["MODAL_GPU"] = "False"
+    else:
+        print(f"💻 CPU training for {model_name} model")
+        print("⚡ CPU training is optimal for statistical models like ARIMA and Random Forest")
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Disable GPU
+        os.environ["MODAL_GPU"] = "False"
+
     # Use a temporary directory to handle local file operations within the container
     with tempfile.TemporaryDirectory() as temp_dir:
         local_dataset_path = Path(temp_dir) / "dataset.csv"

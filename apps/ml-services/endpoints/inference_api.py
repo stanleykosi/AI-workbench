@@ -24,6 +24,7 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Dict, List, Any, TYPE_CHECKING
+from datetime import datetime
 
 import modal
 import psycopg2
@@ -150,6 +151,18 @@ def load_model(experiment_id: str):
         )
 
     model_artifact_s3_key, model_config = result
+    
+    # Parse model_config if it's a JSON string
+    if isinstance(model_config, str):
+        import json
+        try:
+            model_config = json.loads(model_config)
+        except json.JSONDecodeError:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Invalid model config format for experiment '{experiment_id}'.",
+            )
+    
     model_name = model_config.get("modelName")
 
     if not model_artifact_s3_key or not model_name:
@@ -265,29 +278,106 @@ async def predict(
             elif "Forecasted Close" in forecast_df.columns:
                 next_prediction = forecast_df["Forecasted Close"].iloc[0]
             else:
-                next_prediction = forecast_df.iloc[0, 1]  # Assume second column is prediction
+                # Safely handle different DataFrame sizes
+                if len(forecast_df.columns) > 1:
+                    next_prediction = forecast_df.iloc[0, 1]  # Second column if available
+                else:
+                    next_prediction = forecast_df.iloc[0, 0]  # Only column if only one exists
         else:
-            # Fallback: create a minimal input with current timestamp
+            # Fallback: fetch the training dataset and use recent data for prediction
+            print(f"Model {model.__class__.__name__} doesn't have forecast method, using training data fallback")
+            
+            # Get the dataset ID from the experiment
+            conn = get_db_connection()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        SELECT dataset_id FROM experiments WHERE id = %s
+                        """,
+                        (experiment_id,),
+                    )
+                    dataset_result = cur.fetchone()
+            finally:
+                if conn:
+                    conn.close()
+            
+            if not dataset_result or not dataset_result[0]:
+                raise HTTPException(
+                    status_code=500,
+                    detail="No training dataset found for this experiment."
+                )
+            
+            dataset_id = dataset_result[0]
+            
+            # Fetch dataset metadata
+            conn = get_db_connection()
+            try:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        SELECT s3_key FROM datasets WHERE id = %s
+                        """,
+                        (dataset_id,),
+                    )
+                    dataset_result = cur.fetchone()
+            finally:
+                if conn:
+                    conn.close()
+            
+            if not dataset_result:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Training dataset not found."
+                )
+            
+            dataset_s3_key = dataset_result[0]
+            
+            # Download and load the training dataset
+            import boto3
             import pandas as pd
-            from datetime import datetime, timedelta
             
-            # Create a simple input with current time and placeholder OHLCV
-            current_time = datetime.now()
-            input_data = pd.DataFrame({
-                "date": [current_time - timedelta(hours=1), current_time],
-                "open": [1.0, 1.0],
-                "high": [1.0, 1.0], 
-                "low": [1.0, 1.0],
-                "close": [1.0, 1.0],
-                "volume": [1.0, 1.0]
-            })
+            s3_client = boto3.client("s3")
+            datasets_bucket = os.environ["S3_DATASETS_BUCKET"]
             
-            # Run inference and get the last prediction
-            predictions_df = model.inference(input_data)
-            if "prediction" in predictions_df.columns:
-                next_prediction = predictions_df["prediction"].iloc[-1]
-            else:
-                next_prediction = predictions_df.iloc[-1, 1]  # Assume second column is prediction
+            with tempfile.TemporaryDirectory() as temp_dir:
+                local_dataset_path = Path(temp_dir) / "training_data.csv"
+                s3_client.download_file(
+                    datasets_bucket, dataset_s3_key, str(local_dataset_path)
+                )
+                
+                # Load the training dataset
+                training_data = pd.read_csv(local_dataset_path)
+                
+                # Ensure required columns exist
+                required_cols = ["open", "high", "low", "close", "volume"]
+                if not all(col in training_data.columns for col in required_cols):
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Training dataset missing required OHLCV columns."
+                    )
+                
+                # Use the last few rows of training data for prediction
+                # This gives the model the historical context it needs
+                recent_data = training_data.tail(10)  # Last 10 data points
+                
+                # Run inference on the recent training data
+                predictions_df = model.inference(recent_data)
+                
+                # Get the last prediction
+                if "prediction" in predictions_df.columns:
+                    next_prediction = predictions_df["prediction"].iloc[-1]
+                elif len(predictions_df.columns) > 1:
+                    # Look for prediction-like columns
+                    prediction_cols = [col for col in predictions_df.columns if 'pred' in col.lower() or 'forecast' in col.lower()]
+                    if prediction_cols:
+                        next_prediction = predictions_df[prediction_cols[0]].iloc[-1]
+                    else:
+                        # Use the last column as fallback
+                        next_prediction = predictions_df.iloc[-1, -1]
+                else:
+                    # Single column DataFrame
+                    next_prediction = predictions_df.iloc[-1, 0]
         
         return {
             "experiment_id": experiment_id,
