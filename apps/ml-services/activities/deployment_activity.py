@@ -51,26 +51,32 @@ async def deploy_model_activity(
     activity.heartbeat()
     print(f"🚀 Starting deployment for experiment: {params.experiment_id}")
 
-    # Sanitize the experiment_id (which is a UUID) to be a valid part of a deployment name.
-    # Modal deployment names must be DNS-compliant.
-    safe_experiment_id = params.experiment_id.replace("-", "")
-    deployment_name = f"inference-ep--{safe_experiment_id}"
+    # Use a single shared inference endpoint that dynamically loads by experiment_id.
+    app_name = "ai-workbench-inference-endpoint"
+    print(f"🔧 Ensuring shared inference app '{app_name}' is deployed")
 
-    print(f"🔧 Creating deployment with name: {deployment_name}")
-
-    # Defer import to avoid pulling Modal/ASGI app into workflow sandbox
-    from endpoints.inference_api import app as inference_api_app
-
-    # Programmatically deploy the FastAPI app defined in `inference_api.py`.
-    # The `name` parameter makes this a persistent, named deployment.
-    # `public=True` makes the deployment's web URL accessible from the internet.
-    deployment = inference_api_app.deploy(
-        name=deployment_name,
-        public=True,
-    )
-
-    # Get the public URL of the deployment
-    endpoint_url = deployment.url
+    # Try to look up the existing deployment; if not found, deploy once.
+    from modal import Function
+    try:
+        fn = Function.from_name(app_name, "inference_endpoint")
+    except Exception:
+        print("ℹ️ Inference app not found; deploying base inference app once...")
+        from endpoints.inference_api import app as inference_api_app  # deferred import
+        inference_api_app.deploy()
+        fn = Function.from_name(app_name, "inference_endpoint")
+    # Prefer new API; falls back to older property if needed
+    endpoint_url = None
+    if hasattr(fn, "get_web_url"):
+        try:
+            endpoint_url = fn.get_web_url()
+        except Exception:
+            endpoint_url = None
+    if not endpoint_url:
+        endpoint_url = getattr(fn, "web_url", None)
+    if not endpoint_url:
+        raise RuntimeError(
+            "Failed to resolve web endpoint URL after deployment; function has no web_url."
+        )
     print(f"✅ Deployment successful! Endpoint URL: {endpoint_url}")
 
     return DeployModelActivityResult(endpoint_url=endpoint_url)

@@ -154,7 +154,7 @@ export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
             <TableRow>
               <TableHead>Model</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Endpoint URL</TableHead>
+              <TableHead>Predict URL</TableHead>
               <TableHead>Created At</TableHead>
             </TableRow>
           </TableHeader>
@@ -169,18 +169,23 @@ export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
                 </TableCell>
                 <TableCell>
                   {dep.modalEndpointUrl ? (
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={dep.modalEndpointUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="truncate text-sm text-blue-600 hover:underline"
-                        title={dep.modalEndpointUrl}
-                      >
-                        {dep.modalEndpointUrl}
-                      </a>
-                      <CopyButton textToCopy={dep.modalEndpointUrl} />
-                    </div>
+                    (() => {
+                      const predictUrl = `${dep.modalEndpointUrl}/predict/${dep.experimentId}`;
+                      return (
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={predictUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="truncate text-sm text-blue-600 hover:underline"
+                            title={predictUrl}
+                          >
+                            {predictUrl}
+                          </a>
+                          <CopyButton textToCopy={predictUrl} />
+                        </div>
+                      );
+                    })()
                   ) : (
                     <span className="text-muted-foreground">Generating...</span>
                   )}

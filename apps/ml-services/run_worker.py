@@ -72,6 +72,8 @@ image = (
         modal.Secret.from_name("ai-workbench-supabase-secret"),
         modal.Secret.from_name("ai-workbench-temporal-secret"),
         modal.Secret.from_name("ai-workbench-tiingo-secret"),
+        # Modal auth for headless deploys
+        modal.Secret.from_name("ai-workbench-modal-secret"),
     ]
 )
 async def start_worker():
