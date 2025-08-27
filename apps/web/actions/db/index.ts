@@ -26,3 +26,8 @@ export {
   type ActivityItem,
   type RecentActivity,
 } from "./recent-activity-actions";
+export {
+  getProjectStatsAction,
+  getMultipleProjectStatsAction,
+  type ProjectStats,
+} from "./project-stats-actions";

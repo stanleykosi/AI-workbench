@@ -26,7 +26,7 @@
 import { Suspense } from "react";
 import { getProjectsAction } from "@/actions/db/projects-actions";
 import { PageHeader } from "./_components/page-header";
-import { ProjectsList } from "./_components/projects-list";
+import { ProjectsListWithStats } from "./_components/projects-list-with-stats";
 import { ProjectsSkeleton } from "./_components/projects-skeleton";
 
 /**
@@ -46,7 +46,7 @@ async function ProjectsFetcher() {
   }
 
   // Pass the fetched projects to the client component for rendering and interaction.
-  return <ProjectsList initialProjects={projects} />;
+  return <ProjectsListWithStats initialProjects={projects} />;
 }
 
 /**

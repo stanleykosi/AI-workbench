@@ -22,7 +22,7 @@
  */
 import { notFound } from "next/navigation";
 import { getProjectByIdAction } from "@/actions/db/projects-actions";
-import { ProjectSidebar } from "./_components/project-sidebar";
+import { ProjectSidebarWithStats } from "./_components/project-sidebar-with-stats";
 
 export default async function ProjectLayout({
   children,
@@ -41,7 +41,7 @@ export default async function ProjectLayout({
 
   return (
     <div className="grid h-full items-start gap-6 md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <ProjectSidebar projectId={project.id} projectName={project.name} />
+      <ProjectSidebarWithStats projectId={project.id} projectName={project.name} />
       <div className="flex flex-col gap-6">{children}</div>
     </div>
   );
