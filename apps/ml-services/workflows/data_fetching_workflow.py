@@ -13,6 +13,7 @@ Key components:
      Temporal UI for debugging.
 """
 import dataclasses
+from typing import Any, Dict
 from datetime import timedelta
 
 from temporalio import workflow
@@ -45,25 +46,38 @@ class FetchDataWorkflow:
     """A Temporal Workflow to manage the Tiingo data fetching lifecycle."""
 
     @workflow.run
-    async def run(self, params: FetchDataWorkflowParams) -> str:
+    async def run(self, params: Dict[str, Any]) -> str:
         """Executes the data fetching workflow."""
-        workflow.logger.info(
-            f"Starting data fetching workflow for symbol: {params.symbol}"
-        )
+        # Accept both snake_case and camelCase inputs
+        def get(keys: list[str]):
+            for k in keys:
+                if k in params:
+                    return params[k]
+            raise KeyError(keys[0])
+
+        project_id = get(["project_id", "projectId"])
+        user_id = get(["user_id", "userId"])
+        data_type = get(["data_type", "dataType"])
+        symbol = get(["symbol"])  # symbol key is consistent across UI
+        start_date = get(["start_date", "startDate"])
+        end_date = get(["end_date", "endDate"])
+        frequency = get(["frequency"])
+
+        workflow.logger.info(f"Starting data fetching workflow for symbol: {symbol}")
 
         try:
             # Step 1: Execute the data fetching and S3 upload activity.
             s3_key = await workflow.start_activity(
                 fetch_data_activity,
                 FetchDataActivityParams(
-                    project_id=params.project_id,
-                    user_id=params.user_id,
-                    data_type=params.data_type,
-                    symbol=params.symbol,
-                    start_date=params.start_date,
-                    end_date=params.end_date,
-                    frequency=params.frequency,
-                    dataset_name=f"{params.symbol}_{params.start_date}_to_{params.end_date}.csv",
+                    project_id=project_id,
+                    user_id=user_id,
+                    data_type=data_type,
+                    symbol=symbol,
+                    start_date=start_date,
+                    end_date=end_date,
+                    frequency=frequency,
+                    dataset_name=f"{symbol}_{start_date}_to_{end_date}.csv",
                 ),
                 start_to_close_timeout=timedelta(minutes=10),
                 retry_policy=RetryPolicy(maximum_attempts=2),
@@ -74,8 +88,8 @@ class FetchDataWorkflow:
             await workflow.start_activity(
                 create_dataset_record_activity,
                 CreateDatasetRecordParams(
-                    project_id=params.project_id,
-                    name=f"{params.symbol} ({params.frequency})",
+                    project_id=project_id,
+                    name=f"{symbol} ({frequency})",
                     s3_key=s3_key,
                     status="ready",
                 ),

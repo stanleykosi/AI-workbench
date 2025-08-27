@@ -70,7 +70,8 @@ image = (
     secrets=[
         modal.Secret.from_name("ai-workbench-aws-secret"),
         modal.Secret.from_name("ai-workbench-supabase-secret"),
-        modal.Secret.from_name("ai-workbench-temporal-secret")
+        modal.Secret.from_name("ai-workbench-temporal-secret"),
+        modal.Secret.from_name("ai-workbench-tiingo-secret"),
     ]
 )
 async def start_worker():

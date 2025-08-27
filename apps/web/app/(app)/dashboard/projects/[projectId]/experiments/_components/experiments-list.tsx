@@ -20,6 +20,7 @@
  */
 "use client";
 
+import Link from "next/link";
 import {
   CheckCircle2,
   Clock,
@@ -143,7 +144,12 @@ export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
             {initialExperiments.map((exp) => (
               <TableRow key={exp.id}>
                 <TableCell className="font-medium">
-                  {(exp.modelConfig as any)?.modelName ?? "N/A"}
+                  <Link
+                    href={`/dashboard/projects/${exp.projectId}/experiments/${exp.id}`}
+                    className="hover:underline"
+                  >
+                    {(exp.modelConfig as any)?.modelName ?? "N/A"}
+                  </Link>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={exp.status} />

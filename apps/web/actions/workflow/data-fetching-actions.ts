@@ -102,7 +102,12 @@ export async function startDataFetchingAction(
         {
           project_id: projectId,
           user_id: userId,
-          ...fetchParams,
+          // Convert camelCase form data to the snake_case expected by Python dataclass
+          data_type: fetchParams.dataType,
+          symbol: fetchParams.symbol,
+          start_date: fetchParams.startDate,
+          end_date: fetchParams.endDate,
+          frequency: fetchParams.frequency,
         },
       ],
     });

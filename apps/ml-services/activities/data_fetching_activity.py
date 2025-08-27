@@ -74,10 +74,13 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
     # Fetch data from Tiingo
     print(f"📥 Fetching {params.data_type} data for {params.symbol}")
     
-    if params.data_type == "price":
+    # Support both legacy types (price/fundamentals) and UI types (stock/crypto)
+    if params.data_type in ("stock", "price"):
         url = f"https://api.tiingo.com/tiingo/daily/{params.symbol}/prices"
     elif params.data_type == "fundamentals":
         url = f"https://api.tiingo.com/tiingo/fundamentals/{params.symbol}/daily"
+    elif params.data_type == "crypto":
+        url = "https://api.tiingo.com/tiingo/crypto/prices"
     else:
         raise ValueError(f"Unsupported data type: {params.data_type}")
 
@@ -89,8 +92,12 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
     params_dict = {
         "startDate": params.start_date,
         "endDate": params.end_date,
-        "format": "json"
+        "format": "json",
     }
+
+    # For the crypto endpoint, the symbol must be passed via 'tickers'
+    if params.data_type == "crypto":
+        params_dict["tickers"] = params.symbol.lower()
     
     if params.frequency != "daily":
         params_dict["resampleFreq"] = params.frequency
@@ -99,10 +106,59 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
     response.raise_for_status()
     
     data = response.json()
-    print(f"📊 Fetched {len(data)} records from Tiingo")
 
-    # Convert to DataFrame and save
-    df = pd.DataFrame(data)
+    # Normalize Tiingo response into OHLCV schema expected by training
+    if params.data_type == "crypto":
+        # Crypto returns list with entries containing a nested priceData list
+        # Example: [{ ticker, baseCurrency, quoteCurrency, priceData: [{date, open, high, low, close, volume, ...}, ...] }]
+        records = []
+        if isinstance(data, list) and len(data) > 0:
+            first = data[0]
+            price_data = first.get("priceData") or first.get("tickerData") or []
+            if isinstance(price_data, list):
+                records = price_data
+        df = pd.DataFrame(records)
+    else:
+        # Stock/daily prices return a flat list of bars
+        df = pd.DataFrame(data)
+
+    print(f"📊 Fetched {len(df)} rows after normalization")
+
+    # Ensure required columns exist; map adjusted fields if only adjusted present
+    required_cols = ["open", "high", "low", "close", "volume"]
+    alt_map = {
+        "open": ["adjOpen", "adj_open"],
+        "high": ["adjHigh", "adj_high"],
+        "low": ["adjLow", "adj_low"],
+        "close": ["adjClose", "adj_close"],
+        "volume": ["adjVolume", "adj_volume"],
+    }
+    for col, alts in alt_map.items():
+        if col not in df.columns:
+            for alt in alts:
+                if alt in df.columns:
+                    df[col] = df[alt]
+                    break
+
+    # Keep only expected training columns plus date if present
+    keep_cols = [c for c in ["date"] + required_cols if c in df.columns]
+    df = df[keep_cols]
+
+    # Basic cleaning: coerce numerics and drop rows with missing required fields
+    for col in required_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    if "date" in df.columns:
+        df["date"] = pd.to_datetime(df["date"], errors="coerce")
+        df = df.sort_values("date")
+    df = df.dropna(subset=[c for c in required_cols if c in df.columns])
+
+    # Final validation
+    missing = [c for c in required_cols if c not in df.columns]
+    if missing:
+        raise ValueError(
+            f"Fetched data missing required columns after normalization: {', '.join(missing)}"
+        )
     
     # Create timestamp for unique filename
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

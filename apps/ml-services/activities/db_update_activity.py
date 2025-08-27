@@ -58,12 +58,12 @@ async def update_experiment_status_activity(params: UpdateExperimentParams) -> N
         conn = psycopg2.connect(database_url)
         cursor = conn.cursor()
 
-        # Update the experiment status
+        # Update the experiment status (no updated_at column in schema)
         if params.model_artifact_s3_key:
             cursor.execute(
                 """
                 UPDATE experiments 
-                SET status = %s, model_artifact_s3_key = %s, updated_at = NOW()
+                SET status = %s, model_artifact_s3_key = %s
                 WHERE id = %s
                 """,
                 (params.status, params.model_artifact_s3_key, params.experiment_id)
@@ -72,7 +72,7 @@ async def update_experiment_status_activity(params: UpdateExperimentParams) -> N
             cursor.execute(
                 """
                 UPDATE experiments 
-                SET status = %s, updated_at = NOW()
+                SET status = %s
                 WHERE id = %s
                 """,
                 (params.status, params.experiment_id)
@@ -106,11 +106,11 @@ async def create_dataset_record_activity(params: CreateDatasetRecordParams) -> N
         conn = psycopg2.connect(database_url)
         cursor = conn.cursor()
 
-        # Insert the new dataset record
+        # Insert the new dataset record (schema has no updated_at column; created_at has default)
         cursor.execute(
             """
-            INSERT INTO datasets (project_id, name, s3_key, status, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, NOW(), NOW())
+            INSERT INTO datasets (project_id, name, s3_key, status)
+            VALUES (%s, %s, %s, %s)
             """,
             (params.project_id, params.name, params.s3_key, params.status)
         )
@@ -143,12 +143,12 @@ async def update_deployment_status_activity(params: UpdateDeploymentParams) -> N
         conn = psycopg2.connect(database_url)
         cursor = conn.cursor()
 
-        # Update the deployment status
+        # Update the deployment status (no updated_at column in schema)
         if params.modal_endpoint_url:
             cursor.execute(
                 """
                 UPDATE deployments 
-                SET status = %s, modal_endpoint_url = %s, updated_at = NOW()
+                SET status = %s, modal_endpoint_url = %s
                 WHERE id = %s
                 """,
                 (params.status, params.modal_endpoint_url, params.deployment_id)
@@ -157,7 +157,7 @@ async def update_deployment_status_activity(params: UpdateDeploymentParams) -> N
             cursor.execute(
                 """
                 UPDATE deployments 
-                SET status = %s, updated_at = NOW()
+                SET status = %s
                 WHERE id = %s
                 """,
                 (params.status, params.deployment_id)
