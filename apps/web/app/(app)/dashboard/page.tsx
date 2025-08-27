@@ -18,7 +18,7 @@
  */
 "use client";
 
-import React, { useEffect, Suspense } from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -36,10 +36,8 @@ import {
   FileTextIcon,
   RocketIcon,
 } from "@radix-ui/react-icons";
-import { DashboardStatsFetcher } from "./_components/dashboard-stats-fetcher";
-import { DashboardStatsSkeleton } from "./_components/dashboard-stats";
-import { RecentActivityFetcher } from "./_components/recent-activity-fetcher";
-import { RecentActivitySkeleton } from "./_components/recent-activity";
+import { DashboardStatsClient } from "./_components/dashboard-stats-client";
+import { RecentActivityClient } from "./_components/recent-activity-client";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -134,9 +132,7 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <motion.div variants={fadeInUp}>
-        <Suspense fallback={<DashboardStatsSkeleton />}>
-          <DashboardStatsFetcher />
-        </Suspense>
+        <DashboardStatsClient />
       </motion.div>
 
       {/* Quick Actions */}
@@ -173,9 +169,7 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <motion.div className="space-y-4" variants={fadeInUp}>
         <h2 className="text-2xl font-semibold text-gray-900">Recent Activity</h2>
-        <Suspense fallback={<RecentActivitySkeleton />}>
-          <RecentActivityFetcher />
-        </Suspense>
+        <RecentActivityClient />
       </motion.div>
     </motion.div>
   );
