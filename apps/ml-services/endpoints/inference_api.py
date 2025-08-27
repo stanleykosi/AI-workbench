@@ -192,21 +192,41 @@ def load_model(experiment_id: str):
         )
 
         # Check for and download the associated scaler artifact if it exists.
-        scaler_artifact_s3_key = model_artifact_s3_key.replace(
-            model_filename, "scaler.pkl"
-        )
-        try:
-            s3_client.head_object(Bucket=models_bucket, Key=scaler_artifact_s3_key)
-            local_scaler_path = local_model_dir / "scaler.pkl"
-            print(f"Downloading scaler artifact to {local_scaler_path}")
-            s3_client.download_file(
-                models_bucket, scaler_artifact_s3_key, str(local_scaler_path)
-            )
-        except s3_client.exceptions.ClientError as e:
-            if e.response["Error"]["Code"] == "404":
-                print("No scaler found for this model, which is expected for some models.")
-            else:
-                raise  # Re-raise other S3 errors.
+        # For LSTM models, the scaler should be in the same directory as the model
+        print(f"🔍 Model artifact S3 key: {model_artifact_s3_key}")
+        print(f"🔍 Model filename: {model_filename}")
+        
+        # Try different approaches to find the scaler
+        possible_scaler_keys = [
+            model_artifact_s3_key.replace(model_filename, "scaler.pkl"),
+            model_artifact_s3_key.replace(f"/{model_filename}", "/scaler.pkl"),
+            model_artifact_s3_key.rsplit("/", 1)[0] + "/scaler.pkl"
+        ]
+        
+        scaler_downloaded = False
+        for scaler_key in possible_scaler_keys:
+            print(f"🔍 Trying scaler key: {scaler_key}")
+            try:
+                s3_client.head_object(Bucket=models_bucket, Key=scaler_key)
+                local_scaler_path = local_model_dir / "scaler.pkl"
+                print(f"✅ Found scaler at: {scaler_key}")
+                print(f"Downloading scaler artifact to {local_scaler_path}")
+                s3_client.download_file(
+                    models_bucket, scaler_key, str(local_scaler_path)
+                )
+                print(f"✅ Scaler downloaded successfully to {local_scaler_path}")
+                scaler_downloaded = True
+                break
+            except s3_client.exceptions.ClientError as e:
+                if e.response["Error"]["Code"] == "404":
+                    print(f"❌ Scaler not found at: {scaler_key}")
+                    continue
+                else:
+                    raise  # Re-raise other S3 errors.
+        
+        if not scaler_downloaded:
+            print("⚠️ No scaler found for this model, which is expected for some models.")
+            print("🔄 Will attempt to recreate scaler from training data if needed.")
 
         # 4. Instantiate and load the model using the MDK factory.
         try:
@@ -215,7 +235,16 @@ def load_model(experiment_id: str):
 
             # The model's `load` method needs the parent directory of the artifacts.
             model_instance.save_dir = temp_dir
-            model_instance.load()
+            print(f"🔧 Model save_dir set to: {temp_dir}")
+            print(f"🔧 Model type: {type(model_instance).__name__}")
+            
+            # Check if the model has a custom load method
+            if hasattr(model_instance, 'load'):
+                print(f"🔧 Calling custom load method for {type(model_instance).__name__}")
+                model_instance.load()
+            else:
+                print(f"⚠️ No custom load method found, using base class load")
+                model_instance.load()
 
             # 5. Cache and return the loaded model.
             model_cache[experiment_id] = model_instance

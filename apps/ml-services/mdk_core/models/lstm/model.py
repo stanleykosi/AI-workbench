@@ -95,6 +95,32 @@ class LstmModel(Model):
             print(f"❌ Failed to load LSTM model: {e}")
             raise
 
+    def save(self):
+        """Save the LSTM model and scaler to disk."""
+        model_dir = os.path.join(self.save_dir, self.model_name)
+        os.makedirs(model_dir, exist_ok=True)
+        
+        try:
+            # Save PyTorch model state dict
+            if self.model is not None:
+                model_path = os.path.join(model_dir, "model.pt")
+                torch.save(self.model.state_dict(), model_path)
+                print(f"✅ LSTM model saved to {model_path}")
+            else:
+                print("⚠️ No model to save")
+            
+            # Save scaler
+            if self.scaler is not None:
+                scaler_path = os.path.join(model_dir, "scaler.pkl")
+                joblib.dump(self.scaler, scaler_path)
+                print(f"✅ Scaler saved to {scaler_path}")
+            else:
+                print("⚠️ No scaler to save")
+                
+        except Exception as e:
+            print(f"❌ Failed to save LSTM model: {e}")
+            raise
+
 
     # pylint: disable=too-many-locals,too-many-statements
     def train(self, data: pd.DataFrame):
