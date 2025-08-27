@@ -34,6 +34,7 @@ import {
   ArrowRightIcon,
   PlusIcon,
   FileTextIcon,
+  RocketIcon,
 } from "@radix-ui/react-icons";
 import { DashboardStatsFetcher } from "./_components/dashboard-stats-fetcher";
 import { DashboardStatsSkeleton } from "./_components/dashboard-stats";
