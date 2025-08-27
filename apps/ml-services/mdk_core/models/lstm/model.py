@@ -5,6 +5,8 @@ from sklearn.preprocessing import MinMaxScaler
 from torch import nn
 from torch.optim.adam import Adam
 from torch.utils.data import DataLoader, TensorDataset
+import os
+import joblib
 
 from mdk_core.models.base_model import Model
 from mdk_core.models.lstm.configs import LstmConfig
@@ -68,6 +70,30 @@ class LstmModel(Model):
             lr=self.config.learning_rate,
         )
         self.scaler = MinMaxScaler(feature_range=(0, 1))
+
+    def load(self):
+        """Load the LSTM model and scaler from disk."""
+        model_dir = os.path.join(self.save_dir, self.model_name)
+        try:
+            # Load PyTorch model state dict
+            model_path = os.path.join(model_dir, "model.pt")
+            if os.path.exists(model_path):
+                self.model.load_state_dict(torch.load(model_path))
+                print(f"✅ LSTM model loaded from {model_path}")
+            else:
+                raise FileNotFoundError(f"Model file not found: {model_path}")
+            
+            # Load scaler
+            scaler_path = os.path.join(model_dir, "scaler.pkl")
+            if os.path.exists(scaler_path):
+                self.scaler = joblib.load(scaler_path)
+                print(f"✅ Scaler loaded from {scaler_path}")
+            else:
+                print("⚠️ No scaler found, model may not work properly")
+                
+        except Exception as e:
+            print(f"❌ Failed to load LSTM model: {e}")
+            raise
 
 
     # pylint: disable=too-many-locals,too-many-statements

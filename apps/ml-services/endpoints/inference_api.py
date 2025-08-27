@@ -272,18 +272,127 @@ async def predict(
         # This typically uses the last known data points to predict the next value
         if hasattr(model, 'forecast'):
             # Use the model's built-in forecast method if available
-            forecast_df = model.forecast(steps=1)
-            if "prediction" in forecast_df.columns:
-                next_prediction = forecast_df["prediction"].iloc[0]
-            elif "Forecasted Close" in forecast_df.columns:
-                next_prediction = forecast_df["Forecasted Close"].iloc[0]
-            else:
-                # Safely handle different DataFrame sizes
-                if len(forecast_df.columns) > 1:
-                    next_prediction = forecast_df.iloc[0, 1]  # Second column if available
+            try:
+                # Check if the model requires last_known_data parameter
+                import inspect
+                forecast_params = inspect.signature(model.forecast).parameters
+                
+                if 'last_known_data' in forecast_params:
+                    # LSTM models need historical data for forecasting
+                    print(f"📊 Using forecast method with last_known_data for {model.__class__.__name__}")
+                    
+                    # Get the training dataset to use as last_known_data
+                    conn = get_db_connection()
+                    try:
+                        with conn.cursor() as cur:
+                            cur.execute(
+                                """
+                                SELECT dataset_id FROM experiments WHERE id = %s
+                                """,
+                                (experiment_id,),
+                            )
+                            dataset_result = cur.fetchone()
+                    finally:
+                        if conn:
+                            conn.close()
+                    
+                    if not dataset_result or not dataset_result[0]:
+                        raise HTTPException(
+                            status_code=500,
+                            detail="No training dataset found for this experiment."
+                        )
+                    
+                    dataset_id = dataset_result[0]
+                    
+                    # Fetch dataset metadata
+                    conn = get_db_connection()
+                    try:
+                        with conn.cursor() as cur:
+                            cur.execute(
+                                """
+                                SELECT s3_key FROM datasets WHERE id = %s
+                                """,
+                                (dataset_id,),
+                            )
+                            dataset_result = cur.fetchone()
+                    finally:
+                        if conn:
+                            conn.close()
+                    
+                    if not dataset_result:
+                        raise HTTPException(
+                            status_code=500,
+                            detail="Training dataset not found."
+                        )
+                    
+                    dataset_s3_key = dataset_result[0]
+                    
+                    # Download and load the training dataset
+                    import boto3
+                    import pandas as pd
+                    
+                    s3_client = boto3.client("s3")
+                    datasets_bucket = os.environ["S3_DATASETS_BUCKET"]
+                    
+                    with tempfile.TemporaryDirectory() as temp_dir:
+                        local_dataset_path = Path(temp_dir) / "training_data.csv"
+                        s3_client.download_file(
+                            datasets_bucket, dataset_s3_key, str(local_dataset_path)
+                        )
+                        
+                        # Load the training dataset
+                        training_data = pd.read_csv(local_dataset_path)
+                        
+                        # Ensure required columns exist
+                        required_cols = ["open", "high", "low", "close", "volume"]
+                        if not all(col in training_data.columns for col in required_cols):
+                            raise HTTPException(
+                                status_code=500,
+                                detail="Training dataset missing required OHLCV columns."
+                            )
+                        
+                        # Use the last few rows of training data for prediction
+                        # LSTM models need at least 60 data points for time_steps
+                        min_data_points = 60  # Minimum for LSTM time_steps
+                        if len(training_data) < min_data_points:
+                            raise HTTPException(
+                                status_code=500,
+                                detail=f"Training dataset too small. Need at least {min_data_points} data points, got {len(training_data)}."
+                            )
+                        
+                        # Use the last 60+ data points for LSTM prediction
+                        recent_data = training_data.tail(max(min_data_points, 100))  # At least 60, up to 100
+                        print(f"📊 Using {len(recent_data)} data points for LSTM prediction")
+                        
+                        # Run forecast with the recent data
+                        forecast_df = model.forecast(steps=1, last_known_data=recent_data)
+                        
+                        if "Forecasted Close" in forecast_df.columns:
+                            next_prediction = forecast_df["Forecasted Close"].iloc[0]
+                        else:
+                            next_prediction = forecast_df.iloc[0, 1]  # Assume second column is prediction
                 else:
-                    next_prediction = forecast_df.iloc[0, 0]  # Only column if only one exists
+                    # Models with simple forecast method (no last_known_data required)
+                    forecast_df = model.forecast(steps=1)
+                    if "prediction" in forecast_df.columns:
+                        next_prediction = forecast_df["prediction"].iloc[0]
+                    elif "Forecasted Close" in forecast_df.columns:
+                        next_prediction = forecast_df["Forecasted Close"].iloc[0]
+                    else:
+                        # Safely handle different DataFrame sizes
+                        if len(forecast_df.columns) > 1:
+                            next_prediction = forecast_df.iloc[0, 1]  # Second column if available
+                        else:
+                            next_prediction = forecast_df.iloc[0, 0]  # Only column if only one exists
+            except Exception as forecast_error:
+                print(f"⚠️ Forecast method failed: {forecast_error}, falling back to inference method")
+                # Fall through to the inference method below
+                next_prediction = None
         else:
+            next_prediction = None
+        
+        # If forecast didn't work or model doesn't have forecast method, use inference
+        if next_prediction is None:
             # Fallback: fetch the training dataset and use recent data for prediction
             print(f"Model {model.__class__.__name__} doesn't have forecast method, using training data fallback")
             
