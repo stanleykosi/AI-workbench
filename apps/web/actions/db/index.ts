@@ -21,3 +21,8 @@ export { getDeploymentsForProjectAction } from "./deployments-actions";
 export {
   getDashboardCountsAction,
 } from "./dashboard-actions";
+export {
+  getRecentActivityAction,
+  type ActivityItem,
+  type RecentActivity,
+} from "./recent-activity-actions";

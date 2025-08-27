@@ -38,6 +38,8 @@ import {
 } from "@radix-ui/react-icons";
 import { DashboardStatsFetcher } from "./_components/dashboard-stats-fetcher";
 import { DashboardStatsSkeleton } from "./_components/dashboard-stats";
+import { RecentActivityFetcher } from "./_components/recent-activity-fetcher";
+import { RecentActivitySkeleton } from "./_components/recent-activity";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -168,18 +170,12 @@ export default function DashboardPage() {
 
 
 
-      {/* Recent Activity Placeholder */}
+      {/* Recent Activity */}
       <motion.div className="space-y-4" variants={fadeInUp}>
         <h2 className="text-2xl font-semibold text-gray-900">Recent Activity</h2>
-        <Card>
-          <CardContent className="p-8">
-            <div className="text-center text-muted-foreground">
-              <BarChartIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium">No recent activity</p>
-              <p className="text-sm">Your projects and experiments will appear here</p>
-            </div>
-          </CardContent>
-        </Card>
+        <Suspense fallback={<RecentActivitySkeleton />}>
+          <RecentActivityFetcher />
+        </Suspense>
       </motion.div>
     </motion.div>
   );
