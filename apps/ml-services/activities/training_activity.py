@@ -124,7 +124,7 @@ async def train_model_activity(
         # 2. Run MDK training
         print(f"🤖 Running training for model: {model_name}")
         training_results = run_training(
-            model_name=model_name, data=data, output_dir=str(artifacts_output_dir)
+            model_name=model_name, data=data, output_dir=str(artifacts_output_dir), config=params.model_config
         )
 
         # 3. Upload artifacts to S3

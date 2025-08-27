@@ -12,7 +12,7 @@ class ModelFactory:
         set_seed(seed)
         self.models_dir = "mdk_core.models"
 
-    def create_model(self, model_name: str):
+    def create_model(self, model_name: str, config: dict = None):
         """Dynamically import and create a model class based on the model_name."""
         print_colored(f"Initializing model: {model_name}", "gray")
         try:
@@ -29,7 +29,23 @@ class ModelFactory:
             # Get the model class from the imported module
             model_class = getattr(model_module, model_class_name)
 
-            # Return an instance of the model class
+            # Create config instance if provided
+            if config and model_name == "lstm":
+                from mdk_core.models.lstm.configs import LstmConfig
+                lstm_config = LstmConfig()
+                # Override default values with user config
+                if "time_steps" in config:
+                    lstm_config.time_steps = int(config["time_steps"])
+                if "learning_rate" in config:
+                    lstm_config.learning_rate = float(config["learning_rate"])
+                if "batch_size" in config:
+                    lstm_config.batch_size = int(config["batch_size"])
+                if "epochs" in config:
+                    lstm_config.epochs = int(config["epochs"])
+                print_colored(f"🔧 Using custom config: time_steps={lstm_config.time_steps}", "info")
+                return model_class(config=lstm_config)
+            
+            # Return an instance of the model class with default config
             return model_class()
         except ModuleNotFoundError as e:
             raise ValueError(

@@ -17,7 +17,7 @@ from mdk_core.models.model_factory import ModelFactory
 from mdk_core.data.utils.data_preprocessing import preprocess_data
 from mdk_core.utils.common import print_colored
 
-def run_training(model_name: str, data: pd.DataFrame, output_dir: str) -> dict:
+def run_training(model_name: str, data: pd.DataFrame, output_dir: str, config: dict = None) -> dict:
     """
     Runs the training process for a specified model.
 
@@ -56,7 +56,7 @@ def run_training(model_name: str, data: pd.DataFrame, output_dir: str) -> dict:
     # 3. Create and train the model
     try:
         print_colored(f"Creating model: {model_name}", "info")
-        model = factory.create_model(model_name)
+        model = factory.create_model(model_name, config=config)
         
         # Set the save directory for the model instance
         model.save_dir = output_dir
