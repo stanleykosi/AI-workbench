@@ -74,14 +74,35 @@ def run_training(model_name: str, data: pd.DataFrame, output_dir: str) -> dict:
     model_artifact_path = None
     scaler_artifact_path = None
 
+    print(f"🔧 Trainer checking artifacts in: {model_dir}")
+    print(f"🔧 Model type: {model.model_type}")
+    
     if model.model_type == "pytorch":
         model_artifact_path = os.path.join(model_dir, "model.pt")
+        print(f"🔧 PyTorch model path: {model_artifact_path}")
     elif model.model_type == "pkl":
         model_artifact_path = os.path.join(model_dir, "model.pkl")
+        print(f"🔧 PKL model path: {model_artifact_path}")
 
     scaler_file = os.path.join(model_dir, "scaler.pkl")
+    print(f"🔧 Looking for scaler at: {scaler_file}")
+    print(f"🔧 Scaler file exists: {os.path.exists(scaler_file)}")
+    
     if os.path.exists(scaler_file):
         scaler_artifact_path = scaler_file
+        print(f"✅ Scaler found at: {scaler_artifact_path}")
+        print(f"🔧 Scaler file size: {os.path.getsize(scaler_file)} bytes")
+    else:
+        print(f"❌ Scaler file not found at: {scaler_file}")
+        # List all files in the directory to debug
+        if os.path.exists(model_dir):
+            print(f"🔧 Files in {model_dir}:")
+            for file in os.listdir(model_dir):
+                file_path = os.path.join(model_dir, file)
+                if os.path.isfile(file_path):
+                    print(f"  - {file} ({os.path.getsize(file_path)} bytes)")
+                else:
+                    print(f"  - {file} (directory)")
 
     if not model_artifact_path or not os.path.exists(model_artifact_path):
         raise FileNotFoundError(f"Model artifact not found at {model_artifact_path} after training.")

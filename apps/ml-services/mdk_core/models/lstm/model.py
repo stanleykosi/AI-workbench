@@ -100,12 +100,18 @@ class LstmModel(Model):
         model_dir = os.path.join(self.save_dir, self.model_name)
         os.makedirs(model_dir, exist_ok=True)
         
+        print(f"🔧 LSTM save() called with save_dir: {self.save_dir}")
+        print(f"🔧 Model dir: {model_dir}")
+        print(f"🔧 Scaler object: {self.scaler}")
+        print(f"🔧 Scaler fitted: {hasattr(self.scaler, 'n_features_in_') if self.scaler else False}")
+        
         try:
             # Save PyTorch model state dict
             if self.model is not None:
                 model_path = os.path.join(model_dir, "model.pt")
                 torch.save(self.model.state_dict(), model_path)
                 print(f"✅ LSTM model saved to {model_path}")
+                print(f"🔧 Model file exists: {os.path.exists(model_path)}")
             else:
                 print("⚠️ No model to save")
             
@@ -114,6 +120,8 @@ class LstmModel(Model):
                 scaler_path = os.path.join(model_dir, "scaler.pkl")
                 joblib.dump(self.scaler, scaler_path)
                 print(f"✅ Scaler saved to {scaler_path}")
+                print(f"🔧 Scaler file exists: {os.path.exists(scaler_path)}")
+                print(f"🔧 Scaler file size: {os.path.getsize(scaler_path) if os.path.exists(scaler_path) else 'N/A'} bytes")
             else:
                 print("⚠️ No scaler to save")
                 
