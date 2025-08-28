@@ -31,6 +31,8 @@ class CreateDatasetRecordParams:
     name: str
     s3_key: str
     status: str = "ready"
+    source: str | None = None
+    tiingo_fetch_id: str | None = None
 
 @dataclasses.dataclass
 class UpdateDeploymentParams:
@@ -38,6 +40,17 @@ class UpdateDeploymentParams:
     deployment_id: str
     status: str
     modal_endpoint_url: str | None = None
+
+@dataclasses.dataclass
+class CreateTiingoFetchRecordParams:
+    """Input parameters for creating a new Tiingo fetch record."""
+    project_id: str
+    user_id: str
+    data_type: str
+    symbol: str
+    start_date: str
+    end_date: str
+    frequency: str
 
 
 # --- Temporal Activity Definitions ---
@@ -106,13 +119,13 @@ async def create_dataset_record_activity(params: CreateDatasetRecordParams) -> N
         conn = psycopg2.connect(database_url)
         cursor = conn.cursor()
 
-        # Insert the new dataset record (schema has no updated_at column; created_at has default)
+        # Insert the new dataset record with optional Tiingo fetch reference
         cursor.execute(
             """
-            INSERT INTO datasets (project_id, name, s3_key, status)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO datasets (project_id, name, s3_key, status, source, tiingo_fetch_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
             """,
-            (params.project_id, params.name, params.s3_key, params.status)
+            (params.project_id, params.name, params.s3_key, params.status, params.source, params.tiingo_fetch_id)
         )
 
         conn.commit()
@@ -120,6 +133,49 @@ async def create_dataset_record_activity(params: CreateDatasetRecordParams) -> N
 
     except Exception as e:
         print(f"❌ Error creating dataset record: {e}")
+        if conn:
+            conn.rollback()
+        raise
+    finally:
+        if conn:
+            conn.close()
+
+@activity.defn
+async def create_tiingo_fetch_record_activity(params: CreateTiingoFetchRecordParams) -> str:
+    """
+    Temporal Activity to create a new Tiingo fetch record in the database.
+    Returns the ID of the created fetch record.
+    """
+    activity.heartbeat()
+    print(f"📝 Creating Tiingo fetch record for {params.symbol}")
+
+    conn = None
+    try:
+        # Connect to the Supabase database
+        database_url = os.environ["SUPABASE_DATABASE_URL"]
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+
+        # Insert the new Tiingo fetch record
+        cursor.execute(
+            """
+            INSERT INTO tiingo_fetches (project_id, user_id, data_type, symbol, start_date, end_date, frequency)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (params.project_id, params.user_id, params.data_type, params.symbol, params.start_date, params.end_date, params.frequency)
+        )
+
+        # Get the ID of the created record
+        fetch_id = cursor.fetchone()[0]
+        
+        conn.commit()
+        print(f"✅ Successfully created Tiingo fetch record: {fetch_id}")
+
+        return str(fetch_id)
+
+    except Exception as e:
+        print(f"❌ Error creating Tiingo fetch record: {e}")
         if conn:
             conn.rollback()
         raise

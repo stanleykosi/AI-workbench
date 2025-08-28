@@ -27,6 +27,8 @@ from activities.data_fetching_activity import (
 from activities.db_update_activity import (
     create_dataset_record_activity,
     CreateDatasetRecordParams,
+    create_tiingo_fetch_record_activity,
+    CreateTiingoFetchRecordParams,
 )
 
 # Define the input for the workflow in a dataclass for type safety.
@@ -84,7 +86,23 @@ class FetchDataWorkflow:
             )
             workflow.logger.info(f"Data fetching activity completed. S3 Key: {s3_key}")
 
-            # Step 2: On success, create the dataset record in the database.
+            # Step 2: Create the Tiingo fetch record to store fetch details
+            tiingo_fetch_id = await workflow.start_activity(
+                create_tiingo_fetch_record_activity,
+                CreateTiingoFetchRecordParams(
+                    project_id=project_id,
+                    user_id=user_id,
+                    data_type=data_type,
+                    symbol=symbol,
+                    start_date=start_date,
+                    end_date=end_date,
+                    frequency=frequency,
+                ),
+                start_to_close_timeout=timedelta(minutes=1),
+            )
+            workflow.logger.info(f"Tiingo fetch record created with ID: {tiingo_fetch_id}")
+
+            # Step 3: Create the dataset record in the database with reference to the fetch record
             await workflow.start_activity(
                 create_dataset_record_activity,
                 CreateDatasetRecordParams(
@@ -92,6 +110,8 @@ class FetchDataWorkflow:
                     name=f"{symbol} ({frequency})",
                     s3_key=s3_key,
                     status="ready",
+                    source="tiingo",
+                    tiingo_fetch_id=tiingo_fetch_id,
                 ),
                 start_to_close_timeout=timedelta(minutes=1),
             )

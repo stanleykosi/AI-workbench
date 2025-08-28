@@ -215,6 +215,8 @@ export async function getDatasetByIdAction(
         s3Key: datasetsTable.s3Key,
         projectId: datasetsTable.projectId,
         status: datasetsTable.status,
+        source: datasetsTable.source,
+        tiingoFetchId: datasetsTable.tiingoFetchId,
         createdAt: datasetsTable.createdAt,
       })
       .from(datasetsTable)

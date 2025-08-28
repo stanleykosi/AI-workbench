@@ -41,7 +41,7 @@ async function DatasetsFetcher({ projectId }: { projectId: string }) {
     return <p className="text-destructive">{message}</p>;
   }
 
-  return <DatasetList initialDatasets={datasets} />;
+  return <DatasetList initialDatasets={datasets} projectId={projectId} />;
 }
 
 /**
