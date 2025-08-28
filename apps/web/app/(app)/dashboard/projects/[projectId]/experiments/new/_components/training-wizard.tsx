@@ -164,8 +164,8 @@ export function TrainingWizard({ projectId, datasets }: TrainingWizardProps) {
                 <div
                   key={dataset.id}
                   className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${selectedDatasetId === dataset.id
-                      ? "border-blue-500 bg-blue-50/50"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
+                    ? "border-blue-500 bg-blue-50/50"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
                     }`}
                   onClick={() => setSelectedDatasetId(dataset.id)}
                 >
@@ -202,8 +202,8 @@ export function TrainingWizard({ projectId, datasets }: TrainingWizardProps) {
                 <div
                   key={model.name}
                   className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${selectedModelName === model.name
-                      ? "border-blue-500 bg-blue-50/50"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
+                    ? "border-blue-500 bg-blue-50/50"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
                     }`}
                   onClick={() => setSelectedModelName(model.name)}
                 >
