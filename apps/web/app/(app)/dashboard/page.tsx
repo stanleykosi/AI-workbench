@@ -121,7 +121,7 @@ export default function DashboardPage() {
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-gray-100 rounded-lg" />
 
       <motion.div
-        className="relative z-10 space-y-8"
+        className="relative z-10 space-y-6"
         variants={staggerContainer}
         initial="initial"
         animate="animate"
@@ -131,7 +131,7 @@ export default function DashboardPage() {
           <h1 className="text-4xl font-bold tracking-tighter text-gray-900 sm:text-5xl md:text-6xl">
             Welcome back to the AI Workbench
           </h1>
-          <p className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-gray-600">
+          <p className="max-w-2xl mx-auto text-lg leading-8 text-gray-600">
             You&apos;re signed in! Ready to continue building, testing, and deploying machine learning models for the Allora Network?
           </p>
         </motion.div>
