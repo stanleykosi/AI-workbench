@@ -118,6 +118,7 @@ async def start_worker():
         from activities.db_update_activity import (
             update_experiment_status_activity,
             create_dataset_record_activity,
+            create_tiingo_fetch_record_activity,
             update_deployment_status_activity,
         )
         from activities.deployment_activity import deploy_model_activity
@@ -195,6 +196,7 @@ async def start_worker():
                 fetch_data_activity,
                 update_experiment_status_activity,
                 create_dataset_record_activity,
+                create_tiingo_fetch_record_activity,
                 update_deployment_status_activity,
                 deploy_model_activity,
             ],
@@ -210,6 +212,7 @@ async def start_worker():
         print("   - fetch_data_activity")
         print("   - update_experiment_status_activity")
         print("   - create_dataset_record_activity")
+        print("   - create_tiingo_fetch_record_activity")
         print("   - update_deployment_status_activity")
         print("   - deploy_model_activity")
         print("\n🔄 Starting worker... (Press Ctrl+C to stop)")

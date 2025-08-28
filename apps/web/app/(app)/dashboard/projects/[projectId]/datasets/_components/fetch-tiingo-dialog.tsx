@@ -187,7 +187,7 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
             <Label htmlFor="frequency" className="text-sm font-medium text-gray-700">Frequency</Label>
             <Input
               name="frequency"
-              placeholder="e.g., 1day or daily"
+              placeholder="e.g., daily, weekly, monthly"
               required
               className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />

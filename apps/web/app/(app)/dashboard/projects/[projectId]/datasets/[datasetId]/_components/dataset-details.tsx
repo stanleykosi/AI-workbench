@@ -148,34 +148,22 @@ export function DatasetDetails({ dataset, tiingoFetch }: DatasetDetailsProps) {
         </Card>
       )}
 
-      {/* Storage Information */}
+      {/* Download Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileTextIcon className="h-5 w-5" />
-            Storage Information
+            <DownloadIcon className="h-5 w-5" />
+            Download Dataset
           </CardTitle>
           <CardDescription>
-            Details about where this dataset is stored
+            Download this dataset to your local machine
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">S3 Key</label>
-            <p className="font-mono text-sm bg-muted p-2 rounded mt-1 break-all">
-              {dataset.s3Key}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <DownloadIcon className="h-4 w-4 mr-2" />
-              Download Dataset
-            </Button>
-            <Button variant="outline" size="sm">
-              <ExternalLinkIcon className="h-4 w-4 mr-2" />
-              View in S3
-            </Button>
-          </div>
+        <CardContent>
+          <Button className="w-full">
+            <DownloadIcon className="h-4 w-4 mr-2" />
+            Download Dataset
+          </Button>
         </CardContent>
       </Card>
     </div>

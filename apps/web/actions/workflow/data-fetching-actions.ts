@@ -58,13 +58,13 @@ const FetchDataSchema = z.object({
   frequency: z.string().min(1, "Frequency cannot be empty.")
     .refine((val) => {
       const freq = val.toLowerCase().trim();
-      // Tiingo supports: 1min, 5min, 15min, 30min, 1hour, 1day, 1week, 1month
+      // Tiingo supports: 1min, 5min, 15min, 30min, 1hour, 1week, 1month
       const validFrequencies = [
-        '1min', '5min', '15min', '30min', '1hour', '1day', '1week', '1month',
+        '1min', '5min', '15min', '30min', '1hour', '1week', '1month',
         'daily', 'weekly', 'monthly' // Alternative formats
       ];
       return validFrequencies.includes(freq);
-    }, "Invalid frequency. Use: 1min, 5min, 15min, 30min, 1hour, 1day, 1week, 1month, daily, weekly, or monthly."),
+    }, "Invalid frequency. Use: 1min, 5min, 15min, 30min, 1hour, 1week, 1month, daily, weekly, or monthly."),
 }).refine((data) => {
   const startDate = new Date(data.startDate);
   const endDate = new Date(data.endDate);
