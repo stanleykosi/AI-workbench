@@ -101,6 +101,22 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
     # Fetch data from Tiingo
     print(f"📥 Fetching {params.data_type} data for {params.symbol}")
     
+    # Smart symbol validation and suggestions
+    symbol_upper = params.symbol.upper()
+    symbol_lower = params.symbol.lower()
+    
+    # Common stock symbols (NYSE/NASDAQ)
+    common_stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "CRM"]
+    # Common crypto symbols
+    common_crypto = ["BTC", "ETH", "SOL", "ADA", "DOT", "LINK", "UNI", "MATIC", "AVAX", "ATOM"]
+    
+    # Detect potential mismatches and provide helpful suggestions
+    if params.data_type == "crypto" and symbol_upper in common_stocks:
+        raise ValueError(f"'{params.symbol}' appears to be a stock symbol, but you selected 'crypto' as the data type. Please select 'Stock Market' instead, or use a crypto symbol like 'btcusd', 'ethusd', etc.")
+    
+    if params.data_type in ("stock", "price") and symbol_lower in [c.lower() for c in common_crypto]:
+        raise ValueError(f"'{params.symbol}' appears to be a cryptocurrency, but you selected 'stock' as the data type. Please select 'Cryptocurrency' instead, or use a stock symbol like 'AAPL', 'MSFT', etc.")
+    
     # Support different data types with correct endpoints based on Tiingo documentation
     if params.data_type in ("stock", "price"):
         # Stocks only support daily, weekly, monthly - NO intraday

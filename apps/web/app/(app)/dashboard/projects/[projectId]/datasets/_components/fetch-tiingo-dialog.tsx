@@ -61,6 +61,7 @@ function SubmitButton() {
 export function FetchTiingoDialog({ projectId }: { projectId: string }) {
   const [open, setOpen] = React.useState(false);
   const [formKey, setFormKey] = React.useState(Date.now()); // To reset the form
+  const [dataType, setDataType] = React.useState<string>("");
   const [state, formAction] = useFormState(startDataFetchingAction, {
     isSuccess: false,
     message: "",
@@ -78,9 +79,42 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
       setFormKey(Date.now()); // Reset form state on close
+      setDataType(""); // Reset data type
     }
     setOpen(isOpen);
   };
+
+  const getHelperText = () => {
+    switch (dataType) {
+      case "stock":
+        return {
+          symbol: "Use ticker symbols like AAPL, MSFT, GOOGL, TSLA, AMZN",
+          frequency: "Stocks only support: daily, weekly, monthly (no intraday data)"
+        };
+      case "crypto":
+        return {
+          symbol: "Use trading pairs like btcusd, ethusd, solusd, btceur",
+          frequency: "Supports: daily, weekly, monthly, 1min, 5min, 15min, 30min, 1hour"
+        };
+      case "forex":
+        return {
+          symbol: "Use currency pairs like EURUSD, GBPUSD, USDJPY, AUDCAD",
+          frequency: "Supports: daily, weekly, monthly, 1min, 5min, 15min, 30min, 1hour"
+        };
+      case "iex":
+        return {
+          symbol: "Use ticker symbols like AAPL, MSFT, GOOGL (real-time data)",
+          frequency: "Supports: daily, weekly, monthly, 1min, 5min, 15min, 30min, 1hour"
+        };
+      default:
+        return {
+          symbol: "Select a data type first to see symbol examples",
+          frequency: "Select a data type first to see frequency options"
+        };
+    }
+  };
+
+  const helperText = getHelperText();
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -102,7 +136,7 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
 
           <div className="space-y-2">
             <Label htmlFor="dataType" className="text-sm font-medium text-gray-700">Data Type</Label>
-            <Select name="dataType" required>
+            <Select name="dataType" required onValueChange={setDataType}>
               <SelectTrigger className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 <SelectValue placeholder="Select data type" />
               </SelectTrigger>
@@ -124,8 +158,7 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
               className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <div className="text-xs text-gray-500 space-y-1">
-              <p><span className="font-medium">Stocks:</span> Use ticker symbols like AAPL, MSFT, GOOGL</p>
-              <p><span className="font-medium">Crypto:</span> Use trading pairs like btcusd, ethusd, btceur</p>
+              <p>{helperText.symbol}</p>
             </div>
           </div>
 
@@ -159,9 +192,10 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
               className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <div className="text-xs text-gray-500 space-y-1">
-              <p><span className="font-medium">Supported:</span> 1min, 5min, 15min, 30min, 1hour, 1day, 1week, 1month</p>
-              <p><span className="font-medium">Alternative:</span> daily, weekly, monthly</p>
-              <p className="text-amber-600 font-medium">⚠️ Note: Stocks only support daily, weekly, monthly frequencies</p>
+              <p><span className="font-medium">Supported:</span> {helperText.frequency}</p>
+              {dataType === "stock" && (
+                <p className="text-amber-600 font-medium">⚠️ Note: Stocks only support daily, weekly, monthly frequencies</p>
+              )}
             </div>
           </div>
 
