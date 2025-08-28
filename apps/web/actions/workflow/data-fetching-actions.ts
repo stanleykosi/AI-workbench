@@ -41,8 +41,20 @@ const FetchDataSchema = z.object({
       return cleanSymbol.length >= 1;
     }, "Symbol contains invalid characters. Use only letters and numbers.")
     .transform((val) => val.toLowerCase().trim()),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid start date format."),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid end date format."),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid start date format.")
+    .refine((val) => {
+      const date = new Date(val);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999); // End of today
+      return date <= today;
+    }, "Start date cannot be in the future."),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid end date format.")
+    .refine((val) => {
+      const date = new Date(val);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999); // End of today
+      return date <= today;
+    }, "End date cannot be in the future."),
   frequency: z.string().min(1, "Frequency cannot be empty.")
     .refine((val) => {
       const freq = val.toLowerCase().trim();
@@ -53,6 +65,13 @@ const FetchDataSchema = z.object({
       ];
       return validFrequencies.includes(freq);
     }, "Invalid frequency. Use: 1min, 5min, 15min, 30min, 1hour, 1day, 1week, 1month, daily, weekly, or monthly."),
+}).refine((data) => {
+  const startDate = new Date(data.startDate);
+  const endDate = new Date(data.endDate);
+  return startDate <= endDate;
+}, {
+  message: "Start date must be before or equal to end date.",
+  path: ["endDate"], // This will show the error on the endDate field
 });
 
 /**

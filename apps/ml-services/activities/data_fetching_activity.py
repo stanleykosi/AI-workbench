@@ -51,6 +51,33 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
     activity.heartbeat()
     print(f"🚀 Starting data fetch for {params.symbol} ({params.data_type})")
 
+    # Validate dates before proceeding
+    try:
+        start_dt = datetime.strptime(params.start_date, "%Y-%m-%d")
+        end_dt = datetime.strptime(params.end_date, "%Y-%m-%d")
+        current_date = datetime.now().date()
+        
+        # Check if start date is after end date
+        if start_dt > end_dt:
+            raise ValueError(f"Start date ({params.start_date}) cannot be after end date ({params.end_date})")
+        
+        # Check if end date is in the future (allow same day)
+        if end_dt.date() > current_date:
+            raise ValueError(f"End date ({params.end_date}) cannot be in the future")
+            
+        # Check if start date is too far in the past (more than 10 years)
+        if start_dt.year < current_date.year - 10:
+            raise ValueError(f"Start date ({params.start_date}) is too far in the past (more than 10 years)")
+            
+        # Log the date validation for debugging
+        print(f"📅 Date validation passed: {params.start_date} to {params.end_date} (current date: {current_date})")
+            
+    except ValueError as e:
+        if "cannot be" in str(e):
+            raise e
+        else:
+            raise ValueError(f"Invalid date format. Expected YYYY-MM-DD, got start_date: {params.start_date}, end_date: {params.end_date}")
+
     # Get environment variables
     tiingo_api_key = os.environ.get("TIINGO_API_KEY")
     if not tiingo_api_key:
@@ -76,7 +103,14 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
     
     # Support both legacy types (price/fundamentals) and UI types (stock/crypto)
     if params.data_type in ("stock", "price"):
-        url = f"https://api.tiingo.com/tiingo/daily/{params.symbol}/prices"
+        # For intraday data, use the intraday endpoint
+        if params.frequency in ("1min", "5min", "15min", "30min", "1hour"):
+            url = f"https://api.tiingo.com/tiingo/intraday/{params.symbol}/prices"
+            print(f"🔗 Using intraday endpoint for {params.frequency} frequency")
+        else:
+            # For daily data, use the daily endpoint
+            url = f"https://api.tiingo.com/tiingo/daily/{params.symbol}/prices"
+            print(f"🔗 Using daily endpoint for {params.frequency} frequency")
     elif params.data_type == "fundamentals":
         url = f"https://api.tiingo.com/tiingo/fundamentals/{params.symbol}/daily"
     elif params.data_type == "crypto":
@@ -98,10 +132,55 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
     # For the crypto endpoint, the symbol must be passed via 'tickers'
     if params.data_type == "crypto":
         params_dict["tickers"] = params.symbol.lower()
+        
+        # Common crypto symbol mappings for user-friendly suggestions
+        crypto_symbol_mappings = {
+            "sol": ["solusd", "solusdt", "solbtc"],
+            "bitcoin": ["btcusd", "btcusdt", "btcbtc"],
+            "btc": ["btcusd", "btcusdt", "btcbtc"],
+            "ethereum": ["ethusd", "ethusdt", "ethbtc"],
+            "eth": ["ethusd", "ethusdt", "ethbtc"],
+            "cardano": ["adausd", "adausdt", "adabtc"],
+            "ada": ["adausd", "adausdt", "adabtc"],
+            "polkadot": ["dotusd", "dotusdt", "dotbtc"],
+            "dot": ["dotusd", "dotusdt", "dotbtc"]
+        }
+        
+        # Check if we need to suggest alternative symbols
+        base_symbol = params.symbol.lower().replace("usd", "").replace("usdt", "").replace("btc", "")
+        if base_symbol in crypto_symbol_mappings:
+            print(f"💡 If '{params.symbol}' doesn't work, try these alternatives:")
+            for alt in crypto_symbol_mappings[base_symbol]:
+                print(f"💡   - {alt}")
     
-    if params.frequency != "daily":
-        params_dict["resampleFreq"] = params.frequency
+    # Validate and handle frequency parameter
+    if params.data_type in ("stock", "price"):
+        supported_frequencies = ["daily", "1min", "5min", "15min", "30min", "1hour"]
+        if params.frequency not in supported_frequencies:
+            raise ValueError(f"Unsupported frequency '{params.frequency}' for {params.data_type}. Supported: {', '.join(supported_frequencies)}")
+        
+        # Only add resampleFreq for intraday frequencies
+        if params.frequency in ("1min", "5min", "15min", "30min", "1hour"):
+            params_dict["resampleFreq"] = params.frequency
+            print(f"📊 Added resampleFreq: {params.frequency}")
+    elif params.data_type == "crypto":
+        supported_frequencies = ["daily", "1min", "5min", "15min", "30min", "1hour"]
+        if params.frequency not in supported_frequencies:
+            raise ValueError(f"Unsupported frequency '{params.frequency}' for {params.data_type}. Supported: {', '.join(supported_frequencies)}")
+        
+        # Only add resampleFreq for intraday frequencies
+        if params.frequency in ("1min", "5min", "15min", "30min", "1hour"):
+            params_dict["resampleFreq"] = params.frequency
+            print(f"📊 Added resampleFreq: {params.frequency}")
+    else:
+        # For other data types, just add the frequency if it's not daily
+        if params.frequency != "daily":
+            params_dict["resampleFreq"] = params.frequency
 
+    # Log the API request details for debugging
+    print(f"🔗 Making request to: {url}")
+    print(f"📋 Request parameters: {params_dict}")
+    
     response = requests.get(url, headers=headers, params=params_dict)
     response.raise_for_status()
     
@@ -109,20 +188,67 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
 
     # Normalize Tiingo response into OHLCV schema expected by training
     if params.data_type == "crypto":
-        # Crypto returns list with entries containing a nested priceData list
-        # Example: [{ ticker, baseCurrency, quoteCurrency, priceData: [{date, open, high, low, close, volume, ...}, ...] }]
+        # Based on Tiingo documentation: crypto API returns [{ticker, baseCurrency, quoteCurrency, priceData: [...]}]
         records = []
-        if isinstance(data, list) and len(data) > 0:
-            first = data[0]
-            price_data = first.get("priceData") or first.get("tickerData") or []
-            if isinstance(price_data, list):
-                records = price_data
+        print(f"🔍 Crypto API response structure: {type(data)}")
+        
+        if isinstance(data, list):
+            print(f"🔍 Crypto response is a list with {len(data)} items")
+            if len(data) > 0:
+                first = data[0]
+                print(f"🔍 First item keys: {list(first.keys()) if isinstance(first, dict) else 'Not a dict'}")
+                
+                # According to Tiingo docs, the price data is in the 'priceData' field
+                if "priceData" in first and isinstance(first["priceData"], list):
+                    records = first["priceData"]
+                    print(f"🔍 Found price data in 'priceData' field with {len(records)} records")
+                    
+                    # Log the structure of the first price record if available
+                    if len(records) > 0:
+                        print(f"🔍 First price record keys: {list(records[0].keys()) if isinstance(records[0], dict) else 'Not a dict'}")
+                else:
+                    print(f"❌ No 'priceData' field found in response")
+                    print(f"🔍 Available fields: {list(first.keys()) if isinstance(first, dict) else 'Not a dict'}")
+                    
+                    # Check if this might be a different response format
+                    if "ticker" in first:
+                        print(f"🔍 Found ticker: {first['ticker']}")
+                        if "baseCurrency" in first:
+                            print(f"🔍 Base currency: {first['baseCurrency']}")
+                        if "quoteCurrency" in first:
+                            print(f"🔍 Quote currency: {first['quoteCurrency']}")
+        elif isinstance(data, dict):
+            print(f"🔍 Crypto response is a dict with keys: {list(data.keys())}")
+            # Handle case where response is a single dict instead of list
+            if "priceData" in data and isinstance(data["priceData"], list):
+                records = data["priceData"]
+                print(f"🔍 Found price data in 'priceData' field with {len(records)} records")
+        
+        print(f"🔍 Final records to process: {len(records)}")
+        if len(records) > 0:
+            print(f"🔍 Sample record structure: {records[0] if isinstance(records[0], dict) else 'Not a dict'}")
+        
         df = pd.DataFrame(records)
     else:
         # Stock/daily prices return a flat list of bars
         df = pd.DataFrame(data)
 
     print(f"📊 Fetched {len(df)} rows after normalization")
+
+    # Check if we got any data at all
+    if len(df) == 0:
+        print(f"❌ No data returned from Tiingo API for {params.symbol}")
+        print(f"🔍 API Response: {data}")
+        
+        # Provide helpful suggestions for crypto symbols
+        if params.data_type == "crypto":
+            print(f"💡 For crypto symbols, try common formats like:")
+            print(f"   - 'btcusd' (Bitcoin/USD)")
+            print(f"   - 'ethusd' (Ethereum/USD)")
+            print(f"   - 'solusd' or 'solusdt' (Solana/USD or Solana/USDT)")
+            print(f"   - Check available symbols at: https://api.tiingo.com/tiingo/crypto")
+        
+        raise ValueError(f"No data returned from Tiingo API for {params.symbol}. This could be due to invalid symbol, date range, or API response format.")
 
     # Ensure required columns exist; map adjusted fields if only adjusted present
     required_cols = ["open", "high", "low", "close", "volume"]
