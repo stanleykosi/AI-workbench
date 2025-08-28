@@ -5,7 +5,8 @@
  * display a high-level overview of the user's projects, recent activity, and key metrics.
  *
  * Key features:
- * - A clear and welcoming header for the user.
+ * - A clean, modern design with a subtle gradient background matching the public landing page.
+ * - Professional typography to welcome the user.
  * - Uses `shadcn/ui` Card components for a structured and modern layout.
  * - Serves as the central hub from which users can navigate to other parts of the application.
  *
@@ -15,6 +16,7 @@
  * @notes
  * - Currently, this page is a placeholder. In the future, it will be populated with
  *   dynamic data, such as a summary of projects, recent experiments, or active deployments.
+ * - Styling matches the public landing page for consistency.
  */
 "use client";
 
@@ -84,8 +86,6 @@ const quickActions = [
   }
 ];
 
-
-
 /**
  * Renders the main dashboard page for authenticated users.
  *
@@ -114,63 +114,66 @@ export default function DashboardPage() {
   }
 
   return (
-    <motion.div
-      className="space-y-8"
-      variants={staggerContainer}
-      initial="initial"
-      animate="animate"
-    >
-      {/* Header */}
-      <motion.div className="space-y-2" variants={fadeInUp}>
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-          Dashboard
-        </h1>
-        <p className="text-xl text-muted-foreground">
-          Welcome to your AI Workbench. Here&apos;s a summary of your work.
-        </p>
-      </motion.div>
+    <div className="min-h-screen bg-white">
+      {/* Background gradient matching the public landing page */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-gray-100" />
 
-      {/* Stats Grid */}
-      <motion.div variants={fadeInUp}>
-        <DashboardStatsClient />
-      </motion.div>
+      <motion.div
+        className="relative z-10 space-y-8 px-4 py-8"
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+      >
+        {/* Header */}
+        <motion.div className="space-y-2 text-center" variants={fadeInUp}>
+          <h1 className="text-4xl font-bold tracking-tighter text-gray-900 sm:text-5xl md:text-6xl">
+            Welcome back to the AI Workbench
+          </h1>
+          <p className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-gray-600">
+            You&apos;re signed in! Ready to continue building, testing, and deploying machine learning models for the Allora Network?
+          </p>
+        </motion.div>
 
-      {/* Quick Actions */}
-      <motion.div className="space-y-4" variants={fadeInUp}>
-        <h2 className="text-2xl font-semibold text-gray-900">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action, index) => (
-            <Card
-              key={action.title}
-              className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 border-transparent hover:border-gray-200"
-              onClick={() => router.push(action.href)}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-lg bg-gradient-to-r ${action.color} text-white`}>
-                    <action.icon className="h-6 w-6" />
+        {/* Stats Grid */}
+        <motion.div variants={fadeInUp}>
+          <DashboardStatsClient />
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div className="space-y-4" variants={fadeInUp}>
+          <h2 className="text-2xl font-semibold text-gray-900 text-center">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {quickActions.map((action, index) => (
+              <Card
+                key={action.title}
+                className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 border-transparent hover:border-gray-200 bg-white/80 backdrop-blur-sm"
+                onClick={() => router.push(action.href)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-lg bg-gradient-to-r ${action.color} text-white`}>
+                      <action.icon className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {action.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">{action.description}</p>
+                    </div>
+                    <ArrowRightIcon className="h-5 w-5 text-muted-foreground group-hover:text-blue-600 transition-colors group-hover:translate-x-1" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                      {action.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{action.description}</p>
-                  </div>
-                  <ArrowRightIcon className="h-5 w-5 text-muted-foreground group-hover:text-blue-600 transition-colors group-hover:translate-x-1" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Recent Activity */}
+        <motion.div className="space-y-4" variants={fadeInUp}>
+          <h2 className="text-2xl font-semibold text-gray-900 text-center">Recent Activity</h2>
+          <RecentActivityClient />
+        </motion.div>
       </motion.div>
-
-
-
-      {/* Recent Activity */}
-      <motion.div className="space-y-4" variants={fadeInUp}>
-        <h2 className="text-2xl font-semibold text-gray-900">Recent Activity</h2>
-        <RecentActivityClient />
-      </motion.div>
-    </motion.div>
+    </div>
   );
 }

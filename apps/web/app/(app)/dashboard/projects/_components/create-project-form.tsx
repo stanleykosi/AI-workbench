@@ -12,6 +12,7 @@
  * - Server Action Integration: Directly calls the `createProjectAction` Server Action.
  * - Side Effects on Success: Uses `useEffect` to trigger a callback (`onFormSuccess`) when
  *   the form submission is successful, enabling parent components to react accordingly (e.g., closing a dialog).
+ * - Professional UI: Enhanced styling with modern design elements and smooth animations.
  *
  * @dependencies
  * - `react`: For `useEffect`.
@@ -29,7 +30,7 @@
 
 import * as React from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { ReloadIcon } from "@radix-ui/react-icons";
+import { ReloadIcon, StarIcon } from "@radix-ui/react-icons";
 import { createProjectAction } from "@/actions/db/projects-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,9 +43,22 @@ import { Label } from "@/components/ui/label";
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending && <ReloadIcon className="mr-2 animate-spin" />}
-      Create Project
+    <Button
+      type="submit"
+      disabled={pending}
+      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-sm hover:shadow-md transition-all duration-200 h-12 text-base font-medium"
+    >
+      {pending ? (
+        <>
+          <ReloadIcon className="mr-2 h-5 w-5 animate-spin" />
+          Creating Project...
+        </>
+      ) : (
+        <>
+          <StarIcon className="mr-2 h-5 w-5" />
+          Create Project
+        </>
+      )}
     </Button>
   );
 }
@@ -74,22 +88,30 @@ export function CreateProjectForm({ onFormSuccess }: CreateProjectFormProps) {
   }, [state, onFormSuccess]);
 
   return (
-    <form action={formAction} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="projectName">Project Name</Label>
+    <form action={formAction} className="space-y-6">
+      <div className="space-y-3">
+        <Label htmlFor="projectName" className="text-sm font-semibold text-gray-700">
+          Project Name
+        </Label>
         <Input
           id="projectName"
           name="projectName"
           placeholder="My New Financial Model"
           required
+          className="h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
         />
+        <p className="text-xs text-gray-500">
+          Choose a descriptive name that reflects your project&apos;s purpose
+        </p>
       </div>
 
       <SubmitButton />
 
       {/* Display error message if the action was not successful */}
       {state && !state.isSuccess && state.message && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-700">{state.message}</p>
+        </div>
       )}
     </form>
   );
