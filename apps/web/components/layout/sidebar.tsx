@@ -71,19 +71,25 @@ export function Sidebar() {
   return (
     <div className="relative">
       {/* Toggle Button - Positioned in the middle of the sidebar for better accessibility */}
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={toggleSidebar}
-        className={cn(
-          "absolute -right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full border-2 border-gray-200 bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110",
-          "hover:border-blue-300 hover:bg-blue-50",
-          isCollapsed ? "rotate-180" : ""
-        )}
-        title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, delay: 0.4 }}
       >
-        <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
-      </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleSidebar}
+          className={cn(
+            "absolute -right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full border-2 border-gray-200 bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110",
+            "hover:border-blue-300 hover:bg-blue-50",
+            isCollapsed ? "rotate-180" : ""
+          )}
+          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        >
+          <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+        </Button>
+      </motion.div>
 
       {/* Main Sidebar */}
       <motion.aside
