@@ -107,8 +107,10 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
                 <SelectValue placeholder="Select data type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="crypto">Cryptocurrency</SelectItem>
-                <SelectItem value="stock">Stock Market</SelectItem>
+                <SelectItem value="crypto">Cryptocurrency (supports intraday)</SelectItem>
+                <SelectItem value="stock">Stock Market (daily/weekly/monthly only)</SelectItem>
+                <SelectItem value="forex">Forex (supports intraday)</SelectItem>
+                <SelectItem value="iex">IEX Real-time (supports intraday)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -159,6 +161,7 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
             <div className="text-xs text-gray-500 space-y-1">
               <p><span className="font-medium">Supported:</span> 1min, 5min, 15min, 30min, 1hour, 1day, 1week, 1month</p>
               <p><span className="font-medium">Alternative:</span> daily, weekly, monthly</p>
+              <p className="text-amber-600 font-medium">⚠️ Note: Stocks only support daily, weekly, monthly frequencies</p>
             </div>
           </div>
 

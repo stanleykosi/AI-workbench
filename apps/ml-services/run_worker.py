@@ -67,7 +67,7 @@ image = (
 @app.function(
     image=image,
     gpu="T4",  # Enable GPU for all workers, will fall back to CPU if not needed
-    timeout=7200,  # 2 hour timeout (longer for GPU training)
+    timeout=72000,  # 20 hour timeout (longer for GPU training)
     secrets=[
         modal.Secret.from_name("ai-workbench-aws-secret"),
         modal.Secret.from_name("ai-workbench-supabase-secret"),

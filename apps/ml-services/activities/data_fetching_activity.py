@@ -101,22 +101,37 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
     # Fetch data from Tiingo
     print(f"📥 Fetching {params.data_type} data for {params.symbol}")
     
-    # Support both legacy types (price/fundamentals) and UI types (stock/crypto)
+    # Support different data types with correct endpoints based on Tiingo documentation
     if params.data_type in ("stock", "price"):
-        # For intraday data, use the intraday endpoint
+        # Stocks only support daily, weekly, monthly - NO intraday
         if params.frequency in ("1min", "5min", "15min", "30min", "1hour"):
-            url = f"https://api.tiingo.com/tiingo/intraday/{params.symbol}/prices"
-            print(f"🔗 Using intraday endpoint for {params.frequency} frequency")
-        else:
-            # For daily data, use the daily endpoint
-            url = f"https://api.tiingo.com/tiingo/daily/{params.symbol}/prices"
-            print(f"🔗 Using daily endpoint for {params.frequency} frequency")
+            raise ValueError(f"Intraday frequencies ({params.frequency}) are not supported for stocks. Stocks only support: daily, weekly, monthly")
+        
+        # For stocks, always use the daily endpoint
+        url = f"https://api.tiingo.com/tiingo/daily/{params.symbol}/prices"
+        print(f"🔗 Using daily endpoint for stock {params.symbol} with {params.frequency} frequency")
+        
+    elif params.data_type == "crypto":
+        # Crypto supports intraday frequencies
+        url = "https://api.tiingo.com/tiingo/crypto/prices"
+        print(f"🔗 Using crypto endpoint for {params.symbol} with {params.frequency} frequency")
+        
+    elif params.data_type == "forex":
+        # Forex supports intraday frequencies
+        url = f"https://api.tiingo.com/tiingo/fx/{params.symbol}/prices"
+        print(f"🔗 Using forex endpoint for {params.symbol} with {params.frequency} frequency")
+        
+    elif params.data_type == "iex":
+        # IEX supports intraday frequencies
+        url = f"https://api.tiingo.com/tiingo/iex/{params.symbol}/prices"
+        print(f"🔗 Using IEX endpoint for {params.symbol} with {params.frequency} frequency")
+        
     elif params.data_type == "fundamentals":
         url = f"https://api.tiingo.com/tiingo/fundamentals/{params.symbol}/daily"
-    elif params.data_type == "crypto":
-        url = "https://api.tiingo.com/tiingo/crypto/prices"
+        print(f"🔗 Using fundamentals endpoint for {params.symbol}")
+        
     else:
-        raise ValueError(f"Unsupported data type: {params.data_type}")
+        raise ValueError(f"Unsupported data type: {params.data_type}. Supported types: stock, crypto, forex, iex, fundamentals")
 
     headers = {
         "Content-Type": "application/json",
@@ -153,27 +168,48 @@ async def fetch_data_activity(params: FetchDataActivityParams) -> str:
             for alt in crypto_symbol_mappings[base_symbol]:
                 print(f"💡   - {alt}")
     
-    # Validate and handle frequency parameter
+    # Validate and handle frequency parameter based on data type capabilities
     if params.data_type in ("stock", "price"):
-        supported_frequencies = ["daily", "1min", "5min", "15min", "30min", "1hour"]
+        # Stocks only support daily, weekly, monthly (no intraday)
+        supported_frequencies = ["daily", "weekly", "monthly"]
+        if params.frequency not in supported_frequencies:
+            raise ValueError(f"Unsupported frequency '{params.frequency}' for stocks. Stocks only support: {', '.join(supported_frequencies)}")
+        
+        # Map frontend frequencies to Tiingo API values
+        freq_mapping = {
+            "daily": "daily",
+            "weekly": "1week", 
+            "monthly": "1month"
+        }
+        api_frequency = freq_mapping.get(params.frequency, params.frequency)
+        if api_frequency != "daily":
+            params_dict["resampleFreq"] = api_frequency
+            print(f"📊 Added resampleFreq: {api_frequency}")
+            
+    elif params.data_type in ("crypto", "forex", "iex"):
+        # Crypto, Forex, and IEX support intraday frequencies
+        supported_frequencies = ["daily", "1min", "5min", "15min", "30min", "1hour", "weekly", "monthly"]
         if params.frequency not in supported_frequencies:
             raise ValueError(f"Unsupported frequency '{params.frequency}' for {params.data_type}. Supported: {', '.join(supported_frequencies)}")
         
-        # Only add resampleFreq for intraday frequencies
-        if params.frequency in ("1min", "5min", "15min", "30min", "1hour"):
-            params_dict["resampleFreq"] = params.frequency
-            print(f"📊 Added resampleFreq: {params.frequency}")
-    elif params.data_type == "crypto":
-        supported_frequencies = ["daily", "1min", "5min", "15min", "30min", "1hour"]
-        if params.frequency not in supported_frequencies:
-            raise ValueError(f"Unsupported frequency '{params.frequency}' for {params.data_type}. Supported: {', '.join(supported_frequencies)}")
-        
-        # Only add resampleFreq for intraday frequencies
-        if params.frequency in ("1min", "5min", "15min", "30min", "1hour"):
-            params_dict["resampleFreq"] = params.frequency
-            print(f"📊 Added resampleFreq: {params.frequency}")
+        # Map frontend frequencies to Tiingo API values
+        freq_mapping = {
+            "daily": "daily",
+            "weekly": "1week",
+            "monthly": "1month",
+            "1min": "1min",
+            "5min": "5min", 
+            "15min": "15min",
+            "30min": "30min",
+            "1hour": "1hour"
+        }
+        api_frequency = freq_mapping.get(params.frequency, params.frequency)
+        if api_frequency != "daily":
+            params_dict["resampleFreq"] = api_frequency
+            print(f"📊 Added resampleFreq: {api_frequency}")
+            
     else:
-        # For other data types, just add the frequency if it's not daily
+        # For other data types (fundamentals), just add the frequency if it's not daily
         if params.frequency != "daily":
             params_dict["resampleFreq"] = params.frequency
 
