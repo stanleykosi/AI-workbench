@@ -24,6 +24,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/providers/query-provider";
+import { MobileNotice } from "@/components/ui/mobile-notice";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -58,6 +59,7 @@ export default function RootLayout({
               {children}
             </QueryProvider>
             <Toaster />
+            <MobileNotice />
           </ThemeProvider>
         </body>
       </html>
