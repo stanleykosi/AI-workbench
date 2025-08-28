@@ -169,22 +169,21 @@ export function UploadDatasetDialog({ projectId }: UploadDatasetDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
-          <PlusIcon className="mr-2" />
+        <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-sm hover:shadow-md transition-all duration-200">
+          <PlusIcon className="mr-2 h-4 w-4" />
           Upload Dataset
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Upload a new Dataset</DialogTitle>
-          <DialogDescription>
-            Select a CSV file from your local machine to upload it to this
-            project.
+          <DialogTitle className="text-xl font-semibold">Upload a new Dataset</DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Select a CSV file from your local machine to upload it to this project.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="dataset-file">CSV File</Label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-3">
+            <Label htmlFor="dataset-file" className="text-sm font-medium text-gray-700">CSV File</Label>
             <Input
               id="dataset-file"
               type="file"
@@ -192,18 +191,19 @@ export function UploadDatasetDialog({ projectId }: UploadDatasetDialogProps) {
               onChange={handleFileChange}
               ref={fileInputRef}
               disabled={isUploading}
+              className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            <p className="text-xs text-muted-foreground">
-              Only .csv files are accepted.
+            <p className="text-xs text-gray-500">
+              Only .csv files are accepted. Maximum file size: 100MB.
             </p>
           </div>
 
           {isUploading && (
-            <div className="space-y-2">
-              <Label>Upload Progress</Label>
-              <Progress value={uploadProgress} />
-              <p className="text-xs text-muted-foreground text-center">
-                {uploadProgress}%
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-gray-700">Upload Progress</Label>
+              <Progress value={uploadProgress} className="h-2" />
+              <p className="text-xs text-gray-500 text-center">
+                {uploadProgress}% Complete
               </p>
             </div>
           )}
@@ -212,10 +212,19 @@ export function UploadDatasetDialog({ projectId }: UploadDatasetDialogProps) {
             <Button
               type="submit"
               disabled={!selectedFile || isUploading}
-              className="w-full"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              <UploadIcon className="mr-2" />
-              {isUploading ? "Uploading..." : "Upload and Save"}
+              {isUploading ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <UploadIcon className="mr-2 h-4 w-4" />
+                  Upload and Save
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

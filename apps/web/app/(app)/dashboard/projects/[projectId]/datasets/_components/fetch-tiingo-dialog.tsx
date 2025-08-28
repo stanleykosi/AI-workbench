@@ -49,9 +49,11 @@ import {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending && <DownloadIcon className="mr-2 animate-spin" />}
-      {pending ? "Fetching..." : "Fetch Data"}
+    <Button type="submit" disabled={pending} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+      {pending && (
+        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+      )}
+      {pending ? "Fetching Data..." : "Fetch Data"}
     </Button>
   );
 }
@@ -83,65 +85,81 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <DownloadIcon className="mr-2" />
+        <Button variant="outline" className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
+          <DownloadIcon className="mr-2 h-4 w-4" />
           Fetch from Tiingo
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Fetch Data from Tiingo</DialogTitle>
-          <DialogDescription>
-            Enter the details for the financial data you want to fetch.
+          <DialogTitle className="text-xl font-semibold">Fetch Data from Tiingo</DialogTitle>
+          <DialogDescription className="text-gray-600">
+            Enter the details for the financial data you want to fetch from Tiingo&apos;s API.
           </DialogDescription>
         </DialogHeader>
-        <form key={formKey} action={formAction} className="space-y-4">
+        <form key={formKey} action={formAction} className="space-y-6">
           <input type="hidden" name="projectId" value={projectId} />
 
-          <div className="space-y-2">
-            <Label htmlFor="dataType">Data Type</Label>
+          <div className="space-y-3">
+            <Label htmlFor="dataType" className="text-sm font-medium text-gray-700">Data Type</Label>
             <Select name="dataType" required>
-              <SelectTrigger>
+              <SelectTrigger className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 <SelectValue placeholder="Select data type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="crypto">Crypto</SelectItem>
-                <SelectItem value="stock">Stock</SelectItem>
+                <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                <SelectItem value="stock">Stock Market</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="symbol">Symbol</Label>
+          <div className="space-y-3">
+            <Label htmlFor="symbol" className="text-sm font-medium text-gray-700">Symbol</Label>
             <Input
               name="symbol"
               placeholder="e.g., btcusd or AAPL"
               required
+              className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            <p className="text-xs text-muted-foreground">
-              <strong>Stocks:</strong> Use ticker symbols like AAPL, MSFT, GOOGL<br />
-              <strong>Crypto:</strong> Use trading pairs like btcusd, ethusd, btceur
-            </p>
+            <div className="text-xs text-gray-500 space-y-1">
+              <p><span className="font-medium">Stocks:</span> Use ticker symbols like AAPL, MSFT, GOOGL</p>
+              <p><span className="font-medium">Crypto:</span> Use trading pairs like btcusd, ethusd, btceur</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
-              <Input name="startDate" type="date" required />
+            <div className="space-y-3">
+              <Label htmlFor="startDate" className="text-sm font-medium text-gray-700">Start Date</Label>
+              <Input
+                name="startDate"
+                type="date"
+                required
+                className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
-              <Input name="endDate" type="date" required />
+            <div className="space-y-3">
+              <Label htmlFor="endDate" className="text-sm font-medium text-gray-700">End Date</Label>
+              <Input
+                name="endDate"
+                type="date"
+                required
+                className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="frequency">Frequency</Label>
-            <Input name="frequency" placeholder="e.g., 1day or daily" required />
-            <p className="text-xs text-muted-foreground">
-              <strong>Supported:</strong> 1min, 5min, 15min, 30min, 1hour, 1day, 1week, 1month<br />
-              <strong>Alternative:</strong> daily, weekly, monthly
-            </p>
+          <div className="space-y-3">
+            <Label htmlFor="frequency" className="text-sm font-medium text-gray-700">Frequency</Label>
+            <Input
+              name="frequency"
+              placeholder="e.g., 1day or daily"
+              required
+              className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <div className="text-xs text-gray-500 space-y-1">
+              <p><span className="font-medium">Supported:</span> 1min, 5min, 15min, 30min, 1hour, 1day, 1week, 1month</p>
+              <p><span className="font-medium">Alternative:</span> daily, weekly, monthly</p>
+            </div>
           </div>
 
           <DialogFooter>
