@@ -44,14 +44,14 @@ export function DatasetsPageHeader({ projectId }: DatasetsPageHeaderProps) {
       initial="initial"
       animate="animate"
     >
-      <div>
+      <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Datasets</h1>
-        <p className="mt-2 text-base text-muted-foreground leading-relaxed max-w-2xl">
+        <p className="text-base text-muted-foreground leading-relaxed max-w-2xl">
           Manage your data sources for model training and experimentation.
         </p>
       </div>
       <motion.div
-        className="flex items-center gap-3"
+        className="flex items-center gap-3 ml-8"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
