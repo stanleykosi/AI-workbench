@@ -70,13 +70,13 @@ export function Sidebar() {
 
   return (
     <div className="relative">
-      {/* Toggle Button - Positioned outside the sidebar for better visibility */}
+      {/* Toggle Button - Positioned in the middle of the sidebar for better accessibility */}
       <Button
         variant="outline"
         size="icon"
         onClick={toggleSidebar}
         className={cn(
-          "absolute -right-4 top-6 z-20 h-10 w-10 rounded-full border-2 border-gray-200 bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110",
+          "absolute -right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full border-2 border-gray-200 bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110",
           "hover:border-blue-300 hover:bg-blue-50",
           isCollapsed ? "rotate-180" : ""
         )}
@@ -143,10 +143,14 @@ export function Sidebar() {
                       <Link
                         href={item.href}
                         className={cn(
-                          "group flex items-center gap-4 rounded-xl px-4 py-4 text-sm font-medium transition-all duration-200 hover:bg-gray-50",
-                          isCollapsed ? "justify-center px-2" : "",
+                          "group flex items-center gap-4 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-gray-50",
+                          isCollapsed
+                            ? "justify-center px-2 py-3"
+                            : "px-4 py-4",
                           isActive
-                            ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
+                            ? isCollapsed
+                              ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
+                              : "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
                             : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
                         )}
                         title={isCollapsed ? item.label : undefined}
@@ -154,7 +158,9 @@ export function Sidebar() {
                         <div className={cn(
                           "p-2.5 rounded-xl transition-all duration-200 flex-shrink-0",
                           isActive
-                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
+                            ? isCollapsed
+                              ? "bg-white/20 text-white"
+                              : "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
                             : "bg-gray-100 text-gray-500 group-hover:bg-gray-200 group-hover:text-gray-600"
                         )}>
                           <item.icon className="h-5 w-5" />
