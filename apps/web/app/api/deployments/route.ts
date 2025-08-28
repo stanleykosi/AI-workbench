@@ -18,7 +18,24 @@ export async function GET(request: NextRequest) {
 
     const deployments = await getDeploymentsForProjectAction(projectId);
 
-    return NextResponse.json(deployments);
+    if (!deployments.isSuccess || !deployments.data) {
+      console.error("Failed to fetch deployments:", deployments.message);
+      return NextResponse.json(
+        { error: deployments.message || "Failed to fetch deployments" },
+        { status: 500 }
+      );
+    }
+
+    // Ensure we return an array
+    if (!Array.isArray(deployments.data)) {
+      console.error("Deployments data is not an array:", typeof deployments.data);
+      return NextResponse.json(
+        { error: "Invalid data format returned from database" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(deployments.data);
   } catch (error) {
     console.error("Error fetching deployments:", error);
     return NextResponse.json(

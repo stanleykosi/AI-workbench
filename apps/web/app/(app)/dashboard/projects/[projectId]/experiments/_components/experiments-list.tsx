@@ -118,7 +118,7 @@ export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
   const [refreshCount, setRefreshCount] = useState(0);
 
   // Check if any experiments are still in progress
-  const hasActiveExperiments = experiments.some(
+  const hasActiveExperiments = Array.isArray(experiments) && experiments.some(
     (exp) => exp.status === "pending" || exp.status === "running"
   );
 
@@ -134,15 +134,21 @@ export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
       const response = await fetch(`/api/experiments?projectId=${experiments[0]?.projectId}`);
       if (response.ok) {
         const updatedExperiments = await response.json();
-        setExperiments(updatedExperiments);
 
-        // Check if any experiments changed status
-        const statusChanged = updatedExperiments.some((updated: SelectExperiment, index: number) => {
-          return updated.status !== experiments[index]?.status;
-        });
+        // Ensure we have an array before updating state
+        if (Array.isArray(updatedExperiments)) {
+          setExperiments(updatedExperiments);
 
-        if (statusChanged) {
-          console.log("Experiment status updated, refreshing data...");
+          // Check if any experiments changed status
+          const statusChanged = updatedExperiments.some((updated: SelectExperiment, index: number) => {
+            return updated.status !== experiments[index]?.status;
+          });
+
+          if (statusChanged) {
+            console.log("Experiment status updated, refreshing data...");
+          }
+        } else {
+          console.error("API returned non-array data:", updatedExperiments);
         }
       }
     } catch (error) {

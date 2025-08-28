@@ -158,7 +158,7 @@ export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
   const deploymentsPerPage = 10;
 
   // Check if any deployments are still in progress
-  const hasActiveDeployments = deployments.some(
+  const hasActiveDeployments = Array.isArray(deployments) && deployments.some(
     (dep) => dep.status === "deploying"
   );
 
@@ -174,15 +174,21 @@ export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
       const response = await fetch(`/api/deployments?projectId=${deployments[0]?.experiment?.projectId}`);
       if (response.ok) {
         const updatedDeployments = await response.json();
-        setDeployments(updatedDeployments);
 
-        // Check if any deployments changed status
-        const statusChanged = updatedDeployments.some((updated: DeploymentWithExperiment, index: number) => {
-          return updated.status !== deployments[index]?.status;
-        });
+        // Ensure we have an array before updating state
+        if (Array.isArray(updatedDeployments)) {
+          setDeployments(updatedDeployments);
 
-        if (statusChanged) {
-          console.log("Deployment status updated, refreshing data...");
+          // Check if any deployments changed status
+          const statusChanged = updatedDeployments.some((updated: DeploymentWithExperiment, index: number) => {
+            return updated.status !== deployments[index]?.status;
+          });
+
+          if (statusChanged) {
+            console.log("Deployment status updated, refreshing data...");
+          }
+        } else {
+          console.error("API returned non-array data:", updatedDeployments);
         }
       }
     } catch (error) {
