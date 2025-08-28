@@ -46,10 +46,10 @@ function SkeletonRow() {
       <TableCell>
         <div className="h-6 w-28 animate-pulse rounded-full bg-gray-200" />
       </TableCell>
-      <TableCell>
+      <TableCell className="max-w-[200px]">
         <div className="h-4 w-full animate-pulse rounded-md bg-gray-200" />
       </TableCell>
-      <TableCell>
+      <TableCell className="min-w-[140px]">
         <div className="h-4 w-32 animate-pulse rounded-md bg-gray-200" />
       </TableCell>
     </TableRow>

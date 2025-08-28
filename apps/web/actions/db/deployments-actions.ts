@@ -31,7 +31,7 @@ import { type ActionState } from "@repo/types";
 
 // Define a more detailed type for the response, including the related experiment's model config.
 export type DeploymentWithExperiment = SelectDeployment & {
-  experiment: Pick<SelectExperiment, "modelConfig"> | null;
+  experiment: Pick<SelectExperiment, "modelConfig" | "projectId"> | null;
 };
 
 /**
@@ -84,6 +84,7 @@ export async function getDeploymentsForProjectAction(
         status: deploymentsTable.status,
         createdAt: deploymentsTable.createdAt,
         modelConfig: experimentsTable.modelConfig,
+        projectId: experimentsTable.projectId,
       })
       .from(deploymentsTable)
       .innerJoin(experimentsTable, eq(deploymentsTable.experimentId, experimentsTable.id))
@@ -96,7 +97,10 @@ export async function getDeploymentsForProjectAction(
       modalEndpointUrl: dep.modalEndpointUrl,
       status: dep.status,
       createdAt: dep.createdAt,
-      experiment: { modelConfig: dep.modelConfig },
+      experiment: {
+        modelConfig: dep.modelConfig,
+        projectId: dep.projectId
+      },
     }));
 
     return {

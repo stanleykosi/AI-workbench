@@ -129,7 +129,7 @@ function CopyButton({ textToCopy }: { textToCopy: string }) {
  * Shortens a long URL to fit within the table without horizontal scroll.
  */
 function shortenUrl(url: string): string {
-  if (url.length <= 50) return url;
+  if (url.length <= 35) return url;
 
   // Extract the domain and endpoint ID
   const urlParts = url.split('/');
@@ -208,12 +208,17 @@ export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
                 {currentDeployments.map((dep) => (
                   <TableRow key={dep.id} className="border-gray-100 hover:bg-gray-50/50">
                     <TableCell className="font-medium text-gray-900">
-                      {(dep.experiment?.modelConfig as any)?.modelName ?? "N/A"}
+                      <a
+                        href={`/dashboard/projects/${dep.experiment?.projectId}/experiments/${dep.experimentId}`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                      >
+                        {(dep.experiment?.modelConfig as any)?.modelName ?? "N/A"}
+                      </a>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={dep.status} />
                     </TableCell>
-                    <TableCell className="max-w-xs">
+                    <TableCell className="max-w-[200px]">
                       {dep.modalEndpointUrl ? (
                         (() => {
                           const predictUrl = `${dep.modalEndpointUrl}/predict/${dep.experimentId}`;
@@ -237,7 +242,7 @@ export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
                         <span className="text-muted-foreground text-sm">Generating...</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">
+                    <TableCell className="text-sm text-gray-600 min-w-[140px]">
                       {new Date(dep.createdAt).toLocaleString("en-US", {
                         dateStyle: "medium",
                         timeStyle: "short",
