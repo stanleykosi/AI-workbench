@@ -99,183 +99,188 @@ export function ProjectSidebar({ projectId, projectName }: ProjectSidebarProps) 
   };
 
   return (
-    <motion.nav
-      className={cn(
-        "relative bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 ease-in-out",
-        isCollapsed ? "w-20" : "w-80"
-      )}
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      {/* Toggle Button */}
+    <div className="relative">
+      {/* Toggle Button - Positioned outside the sidebar for better visibility */}
       <Button
-        variant="ghost"
+        variant="outline"
         size="icon"
         onClick={toggleSidebar}
         className={cn(
-          "absolute -right-3 top-6 z-10 h-6 w-6 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200",
+          "absolute -right-4 top-6 z-20 h-10 w-10 rounded-full border-2 border-gray-200 bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110",
+          "hover:border-blue-300 hover:bg-blue-50",
           isCollapsed ? "rotate-180" : ""
         )}
+        title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
       >
-        <ChevronLeftIcon className="h-3 w-3" />
+        <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
       </Button>
 
-      <div className={cn(
-        "p-6 transition-all duration-300 ease-in-out",
-        isCollapsed ? "p-4" : "p-6"
-      )}>
-        {/* Project Header */}
-        <motion.div
-          className="space-y-4"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          {/* Back to Projects */}
+      {/* Main Sidebar */}
+      <motion.nav
+        className={cn(
+          "relative bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 ease-in-out",
+          isCollapsed ? "w-20" : "w-80"
+        )}
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className={cn(
+          "transition-all duration-300 ease-in-out",
+          isCollapsed ? "p-4" : "p-6"
+        )}>
+          {/* Project Header */}
+          <motion.div
+            className="space-y-4"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {/* Back to Projects */}
+            <AnimatePresence mode="wait">
+              {!isCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Link
+                    href="/dashboard/projects"
+                    className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors group"
+                  >
+                    <ArrowLeftIcon className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                    <span>Back to Projects</span>
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Project Info */}
+            <div className="space-y-3">
+              <div className={cn(
+                "flex items-center gap-3",
+                isCollapsed ? "justify-center" : ""
+              )}>
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex-shrink-0">
+                  <FileIcon className="h-5 w-5 text-white" />
+                </div>
+                <AnimatePresence mode="wait">
+                  {!isCollapsed && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="min-w-0"
+                    >
+                      <h2 className="text-lg font-semibold text-gray-900 truncate">{projectName}</h2>
+                      <p className="text-sm text-gray-500">Project Navigation</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Navigation Items */}
+          <motion.div
+            className="space-y-2 mt-6"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            {projectNavItems.map((item, index) => {
+              const fullHref = `/dashboard/projects/${projectId}/${item.href}`;
+              const isActive = pathname === fullHref;
+
+              return (
+                <motion.div
+                  key={item.label}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+                >
+                  <Link
+                    href={fullHref}
+                    className={cn(
+                      "group flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5",
+                      isCollapsed ? "justify-center px-2" : "",
+                      isActive
+                        ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
+                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                    )}
+                    title={isCollapsed ? item.label : undefined}
+                  >
+                    <div className={cn(
+                      "p-2.5 rounded-lg transition-all duration-200 flex-shrink-0",
+                      isActive
+                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
+                        : `bg-gradient-to-r ${item.color} text-white group-hover:scale-110 group-hover:shadow-md`
+                    )}>
+                      <item.icon className="h-4 w-4" />
+                    </div>
+                    <AnimatePresence mode="wait">
+                      {!isCollapsed && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex-1 min-w-0"
+                        >
+                          <div className="font-semibold truncate">{item.label}</div>
+                          <div className="text-xs text-gray-500 truncate">{item.description}</div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <AnimatePresence mode="wait">
+                      {!isCollapsed && isActive && (
+                        <motion.div
+                          className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                          transition={{ duration: 0.2 }}
+                        />
+                      )}
+                    </AnimatePresence>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+
+          {/* Project Stats */}
           <AnimatePresence mode="wait">
             {!isCollapsed && (
               <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
+                className="pt-6 border-t border-gray-200"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 20, opacity: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <Link
-                  href="/dashboard/projects"
-                  className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors group"
-                >
-                  <ArrowLeftIcon className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                  <span>Back to Projects</span>
-                </Link>
+                <div className="space-y-3">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Project Overview
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className="text-lg font-bold text-gray-900">0</div>
+                      <div className="text-xs text-gray-500">Datasets</div>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className="text-lg font-bold text-gray-900">0</div>
+                      <div className="text-xs text-gray-500">Experiments</div>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Project Info */}
-          <div className="space-y-3">
-            <div className={cn(
-              "flex items-center gap-3",
-              isCollapsed ? "justify-center" : ""
-            )}>
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex-shrink-0">
-                <FileIcon className="h-5 w-5 text-white" />
-              </div>
-              <AnimatePresence mode="wait">
-                {!isCollapsed && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="min-w-0"
-                  >
-                    <h2 className="text-lg font-semibold text-gray-900 truncate">{projectName}</h2>
-                    <p className="text-sm text-gray-500">Project Navigation</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Navigation Items */}
-        <motion.div
-          className="space-y-2 mt-6"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          {projectNavItems.map((item, index) => {
-            const fullHref = `/dashboard/projects/${projectId}/${item.href}`;
-            const isActive = pathname === fullHref;
-
-            return (
-              <motion.div
-                key={item.label}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
-              >
-                <Link
-                  href={fullHref}
-                  className={cn(
-                    "group flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5",
-                    isCollapsed ? "justify-center px-2" : "",
-                    isActive
-                      ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200 shadow-sm"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                  )}
-                  title={isCollapsed ? item.label : undefined}
-                >
-                  <div className={cn(
-                    "p-2.5 rounded-lg transition-all duration-200 flex-shrink-0",
-                    isActive
-                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
-                      : `bg-gradient-to-r ${item.color} text-white group-hover:scale-110 group-hover:shadow-md`
-                  )}>
-                    <item.icon className="h-4 w-4" />
-                  </div>
-                  <AnimatePresence mode="wait">
-                    {!isCollapsed && (
-                      <motion.div
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="flex-1 min-w-0"
-                      >
-                        <div className="font-semibold truncate">{item.label}</div>
-                        <div className="text-xs text-gray-500 truncate">{item.description}</div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  <AnimatePresence mode="wait">
-                    {!isCollapsed && isActive && (
-                      <motion.div
-                        className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        transition={{ duration: 0.2 }}
-                      />
-                    )}
-                  </AnimatePresence>
-                </Link>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
-        {/* Project Stats */}
-        <AnimatePresence mode="wait">
-          {!isCollapsed && (
-            <motion.div
-              className="pt-6 border-t border-gray-200"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="space-y-3">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Project Overview
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <div className="text-lg font-bold text-gray-900">0</div>
-                    <div className="text-xs text-gray-500">Datasets</div>
-                  </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <div className="text-lg font-bold text-gray-900">0</div>
-                    <div className="text-xs text-gray-500">Experiments</div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.nav>
+        </div>
+      </motion.nav>
+    </div>
   );
 }
