@@ -90,17 +90,17 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
           Fetch from Tiingo
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Fetch Data from Tiingo</DialogTitle>
           <DialogDescription className="text-gray-600">
             Enter the details for the financial data you want to fetch from Tiingo&apos;s API.
           </DialogDescription>
         </DialogHeader>
-        <form key={formKey} action={formAction} className="space-y-6">
+        <form key={formKey} action={formAction} className="space-y-4">
           <input type="hidden" name="projectId" value={projectId} />
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label htmlFor="dataType" className="text-sm font-medium text-gray-700">Data Type</Label>
             <Select name="dataType" required>
               <SelectTrigger className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -113,7 +113,7 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
             </Select>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label htmlFor="symbol" className="text-sm font-medium text-gray-700">Symbol</Label>
             <Input
               name="symbol"
@@ -128,7 +128,7 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label htmlFor="startDate" className="text-sm font-medium text-gray-700">Start Date</Label>
               <Input
                 name="startDate"
@@ -137,7 +137,7 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
                 className="border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label htmlFor="endDate" className="text-sm font-medium text-gray-700">End Date</Label>
               <Input
                 name="endDate"
@@ -148,7 +148,7 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label htmlFor="frequency" className="text-sm font-medium text-gray-700">Frequency</Label>
             <Input
               name="frequency"

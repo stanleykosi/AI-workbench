@@ -46,8 +46,8 @@ export function DatasetsPageHeader({ projectId }: DatasetsPageHeaderProps) {
     >
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Datasets</h1>
-        <p className="mt-1 text-muted-foreground">
-          Manage your data sources for model training.
+        <p className="mt-2 text-base text-muted-foreground leading-relaxed max-w-2xl">
+          Manage your data sources for model training and experimentation.
         </p>
       </div>
       <motion.div
