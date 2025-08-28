@@ -12,6 +12,7 @@
  * - Copy to Clipboard: Includes a button to easily copy the endpoint URL.
  * - Empty State UI: Provides a clear message to the user if no deployments exist.
  * - Pagination: Shows only 10 deployments per page to improve performance.
+ * - Auto-Refresh: Automatically polls for updates to show real-time status changes.
  *
  * @dependencies
  * - `react`: For `useState`.
@@ -24,6 +25,7 @@
 "use client";
 
 import * as React from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   CheckCircle2,
   Clipboard,
@@ -32,6 +34,7 @@ import {
   XCircle,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,6 +57,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+
+const REFRESH_INTERVAL = 5000; // 5 seconds
+const MAX_REFRESH_ATTEMPTS = 60; // 5 minutes max
 
 /**
  * Renders a visual status badge for a deployment.
@@ -145,14 +151,69 @@ interface DeploymentsListProps {
 }
 
 export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
+  const [deployments, setDeployments] = useState(initialDeployments);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(0);
   const deploymentsPerPage = 10;
 
+  // Check if any deployments are still in progress
+  const hasActiveDeployments = deployments.some(
+    (dep) => dep.status === "deploying"
+  );
+
+  // Auto-refresh function
+  const refreshDeployments = useCallback(async () => {
+    if (!hasActiveDeployments || refreshCount >= MAX_REFRESH_ATTEMPTS) {
+      return;
+    }
+
+    setIsRefreshing(true);
+    try {
+      // Fetch updated deployments data
+      const response = await fetch(`/api/deployments?projectId=${deployments[0]?.experiment?.projectId}`);
+      if (response.ok) {
+        const updatedDeployments = await response.json();
+        setDeployments(updatedDeployments);
+
+        // Check if any deployments changed status
+        const statusChanged = updatedDeployments.some((updated: DeploymentWithExperiment, index: number) => {
+          return updated.status !== deployments[index]?.status;
+        });
+
+        if (statusChanged) {
+          console.log("Deployment status updated, refreshing data...");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to refresh deployments:", error);
+    } finally {
+      setIsRefreshing(false);
+      setRefreshCount(prev => prev + 1);
+    }
+  }, [deployments, hasActiveDeployments, refreshCount]);
+
+  // Set up auto-refresh polling
+  useEffect(() => {
+    if (!hasActiveDeployments) {
+      return;
+    }
+
+    const interval = setInterval(refreshDeployments, REFRESH_INTERVAL);
+    return () => clearInterval(interval);
+  }, [refreshDeployments, hasActiveDeployments]);
+
+  // Manual refresh function
+  const handleManualRefresh = () => {
+    setRefreshCount(0);
+    refreshDeployments();
+  };
+
   // Calculate pagination
-  const totalPages = Math.ceil(initialDeployments.length / deploymentsPerPage);
+  const totalPages = Math.ceil(deployments.length / deploymentsPerPage);
   const startIndex = (currentPage - 1) * deploymentsPerPage;
   const endIndex = startIndex + deploymentsPerPage;
-  const currentDeployments = initialDeployments.slice(startIndex, endIndex);
+  const currentDeployments = deployments.slice(startIndex, endIndex);
 
   const handlePrevPage = () => {
     setCurrentPage(prev => Math.max(prev - 1, 1));
@@ -162,7 +223,7 @@ export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
     setCurrentPage(prev => Math.min(prev + 1, totalPages));
   };
 
-  if (initialDeployments.length === 0) {
+  if (deployments.length === 0) {
     return (
       <Card className="border-gray-200 shadow-sm">
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -185,10 +246,30 @@ export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
       {/* Deployments table */}
       <Card className="border-gray-200 shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            Active Endpoints
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                Active Endpoints
+              </CardTitle>
+              {hasActiveDeployments && (
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-blue-600 font-medium">Auto-refreshing</span>
+                </div>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="border-gray-300 hover:bg-gray-50"
+            >
+              <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
+              Refresh
+            </Button>
+          </div>
           <CardDescription>
             A list of your deployed model inference endpoints.
           </CardDescription>
@@ -261,7 +342,7 @@ export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
         <Card className="border-gray-200 shadow-sm">
           <CardContent className="flex items-center justify-between px-6 py-4">
             <div className="text-sm text-gray-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, initialDeployments.length)} of {initialDeployments.length} deployments
+              Showing {startIndex + 1} to {Math.min(endIndex, deployments.length)} of {deployments.length} deployments
             </div>
             <div className="flex items-center gap-2">
               <Button

@@ -9,6 +9,7 @@
  * - Professional typography to welcome the user.
  * - Uses `shadcn/ui` Card components for a structured and modern layout.
  * - Serves as the central hub from which users can navigate to other parts of the application.
+ * - Works properly within the sidebar layout structure.
  *
  * @dependencies
  * - @/components/ui/card: Provides styled card components for layout.
@@ -17,6 +18,7 @@
  * - Currently, this page is a placeholder. In the future, it will be populated with
  *   dynamic data, such as a summary of projects, recent experiments, or active deployments.
  * - Styling matches the public landing page for consistency.
+ * - Fixed to work properly within the sidebar layout.
  */
 "use client";
 
@@ -114,12 +116,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="relative">
       {/* Background gradient matching the public landing page */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-gray-100" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-gray-100 rounded-lg" />
 
       <motion.div
-        className="relative z-10 space-y-8 px-4 py-8"
+        className="relative z-10 space-y-8"
         variants={staggerContainer}
         initial="initial"
         animate="animate"

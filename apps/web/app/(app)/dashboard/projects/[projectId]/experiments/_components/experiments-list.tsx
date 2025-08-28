@@ -13,6 +13,7 @@
  *   experiment if the list is empty.
  * - Pagination: Shows only 10 experiments at a time with navigation controls.
  * - Professional UI: Enhanced styling for enterprise-grade appearance.
+ * - Auto-Refresh: Automatically polls for updates to show real-time status changes.
  *
  * @dependencies
  * - `lucide-react`: For status icons (Clock, Loader, CheckCircle, XCircle).
@@ -23,7 +24,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   CheckCircle2,
   Clock,
@@ -32,6 +33,7 @@ import {
   XCircle,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +61,8 @@ interface ExperimentsListProps {
 }
 
 const EXPERIMENTS_PER_PAGE = 10;
+const REFRESH_INTERVAL = 5000; // 5 seconds
+const MAX_REFRESH_ATTEMPTS = 60; // 5 minutes max
 
 /**
  * Renders a visual status badge for an experiment.
@@ -99,7 +103,7 @@ function StatusBadge({
   return (
     <Badge
       variant="outline"
-      className={cn("gap-1.5 border font-medium", config.className)}
+      className={cn("gap-1 border-transparent font-medium", config.className)}
     >
       {config.icon}
       <span>{config.label}</span>
@@ -107,102 +111,179 @@ function StatusBadge({
   );
 }
 
-/**
- * Renders a list of experiments in a table or an empty state message.
- *
- * @param {ExperimentsListProps} props - The component props.
- * @returns {JSX.Element} The rendered list of experiments.
- */
 export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
+  const [experiments, setExperiments] = useState(initialExperiments);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(0);
 
-  if (initialExperiments.length === 0) {
+  // Check if any experiments are still in progress
+  const hasActiveExperiments = experiments.some(
+    (exp) => exp.status === "pending" || exp.status === "running"
+  );
+
+  // Auto-refresh function
+  const refreshExperiments = useCallback(async () => {
+    if (!hasActiveExperiments || refreshCount >= MAX_REFRESH_ATTEMPTS) {
+      return;
+    }
+
+    setIsRefreshing(true);
+    try {
+      // Fetch updated experiments data
+      const response = await fetch(`/api/experiments?projectId=${experiments[0]?.projectId}`);
+      if (response.ok) {
+        const updatedExperiments = await response.json();
+        setExperiments(updatedExperiments);
+
+        // Check if any experiments changed status
+        const statusChanged = updatedExperiments.some((updated: SelectExperiment, index: number) => {
+          return updated.status !== experiments[index]?.status;
+        });
+
+        if (statusChanged) {
+          console.log("Experiment status updated, refreshing data...");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to refresh experiments:", error);
+    } finally {
+      setIsRefreshing(false);
+      setRefreshCount(prev => prev + 1);
+    }
+  }, [experiments, hasActiveExperiments, refreshCount]);
+
+  // Set up auto-refresh polling
+  useEffect(() => {
+    if (!hasActiveExperiments) {
+      return;
+    }
+
+    const interval = setInterval(refreshExperiments, REFRESH_INTERVAL);
+    return () => clearInterval(interval);
+  }, [refreshExperiments, hasActiveExperiments]);
+
+  // Manual refresh function
+  const handleManualRefresh = () => {
+    setRefreshCount(0);
+    refreshExperiments();
+  };
+
+  // Calculate pagination
+  const totalPages = Math.ceil(experiments.length / EXPERIMENTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * EXPERIMENTS_PER_PAGE;
+  const endIndex = startIndex + EXPERIMENTS_PER_PAGE;
+  const currentExperiments = experiments.slice(startIndex, endIndex);
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
+  if (experiments.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 p-12 text-center">
-        <h3 className="text-xl font-semibold tracking-tight">
-          No experiments found
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Click &quot;New Experiment&quot; to start your first training run.
-        </p>
-      </div>
+      <Card className="border-gray-200 shadow-sm">
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="p-3 bg-gray-100 rounded-full mb-4">
+            <Loader className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold tracking-tight text-gray-900">
+            No experiments found
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground max-w-md">
+            Create your first experiment to start training machine learning models.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
-  // Calculate pagination
-  const totalPages = Math.ceil(initialExperiments.length / EXPERIMENTS_PER_PAGE);
-  const startIndex = (currentPage - 1) * EXPERIMENTS_PER_PAGE;
-  const endIndex = startIndex + EXPERIMENTS_PER_PAGE;
-  const currentExperiments = initialExperiments.slice(startIndex, endIndex);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
   return (
-    <Card className="border-gray-200 shadow-sm">
-      <CardHeader className="border-b border-gray-100 bg-gray-50/50">
-        <CardTitle className="text-xl font-semibold text-gray-900">Recent Experiments</CardTitle>
-        <CardDescription className="text-gray-600">
-          A list of your recent model training runs. Showing {startIndex + 1}-{Math.min(endIndex, initialExperiments.length)} of {initialExperiments.length} experiments.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-gray-100 bg-gray-50/30">
-              <TableHead className="font-semibold text-gray-700">Model</TableHead>
-              <TableHead className="font-semibold text-gray-700">Status</TableHead>
-              <TableHead className="font-semibold text-gray-700">Created At</TableHead>
-              <TableHead className="font-semibold text-gray-700">
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentExperiments.map((exp) => (
-              <TableRow key={exp.id} className="border-gray-100 hover:bg-gray-50/50 transition-colors">
-                <TableCell className="font-medium">
-                  <Link
-                    href={`/dashboard/projects/${exp.projectId}/experiments/${exp.id}`}
-                    className="text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-                  >
-                    {(exp.modelConfig as any)?.modelName ?? "N/A"}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={exp.status} />
-                </TableCell>
-                <TableCell className="text-gray-600">
-                  {new Date(exp.createdAt).toLocaleString("en-US", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="icon" disabled className="text-gray-400 hover:text-gray-600">
-                    <MoreHorizontal className="h-4 w-4" />
-                    <span className="sr-only">More actions</span>
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+    <div className="space-y-4">
+      {/* Experiments table */}
+      <Card className="border-gray-200 shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Loader className="h-5 w-5 text-blue-600" />
+                Recent Experiments
+              </CardTitle>
+              {hasActiveExperiments && (
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-blue-600 font-medium">Auto-refreshing</span>
+                </div>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="border-gray-300 hover:bg-gray-50"
+            >
+              <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
+              Refresh
+            </Button>
+          </div>
+          <CardDescription>
+            A list of your recent model training runs.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-200 bg-gray-50/50">
+                  <TableHead className="font-semibold text-gray-900">Model</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Status</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Created At</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentExperiments.map((experiment) => (
+                  <TableRow key={experiment.id} className="border-gray-100 hover:bg-gray-50/50">
+                    <TableCell className="font-medium text-gray-900">
+                      <Link
+                        href={`/dashboard/projects/${experiment.projectId}/experiments/${experiment.id}`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                      >
+                        {(experiment.modelConfig as any)?.modelName ?? "N/A"}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={experiment.status} />
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {new Date(experiment.createdAt).toLocaleString("en-US", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/30 px-6 py-4">
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <Card className="border-gray-200 shadow-sm">
+          <CardContent className="flex items-center justify-between px-6 py-4">
             <div className="text-sm text-gray-600">
-              Page {currentPage} of {totalPages}
+              Showing {startIndex + 1} to {Math.min(endIndex, experiments.length)} of {experiments.length} experiments
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -215,6 +296,24 @@ export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Previous
               </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className={cn(
+                      "h-8 w-8 p-0",
+                      currentPage === page
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : "border-gray-300 hover:bg-gray-50"
+                    )}
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -226,9 +325,9 @@ export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
