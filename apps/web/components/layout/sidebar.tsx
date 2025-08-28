@@ -151,7 +151,7 @@ export function Sidebar() {
                         className={cn(
                           "group flex items-center gap-4 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-gray-50",
                           isCollapsed
-                            ? "justify-center px-1.5 py-1.5"
+                            ? "justify-center px-1 py-0.5"
                             : "px-4 py-4",
                           isActive
                             ? isCollapsed
