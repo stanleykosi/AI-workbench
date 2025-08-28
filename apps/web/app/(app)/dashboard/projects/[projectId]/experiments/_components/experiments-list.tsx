@@ -11,6 +11,8 @@
  *   based on the experiment's status (e.g., pending, running, completed, failed).
  * - Empty State UI: Provides a clear message and guides the user to create an
  *   experiment if the list is empty.
+ * - Pagination: Shows only 10 experiments at a time with navigation controls.
+ * - Professional UI: Enhanced styling for enterprise-grade appearance.
  *
  * @dependencies
  * - `lucide-react`: For status icons (Clock, Loader, CheckCircle, XCircle).
@@ -21,12 +23,15 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   CheckCircle2,
   Clock,
   Loader,
   MoreHorizontal,
   XCircle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +58,8 @@ interface ExperimentsListProps {
   initialExperiments: SelectExperiment[];
 }
 
+const EXPERIMENTS_PER_PAGE = 10;
+
 /**
  * Renders a visual status badge for an experiment.
  * @param {object} props - The component props.
@@ -68,22 +75,22 @@ function StatusBadge({
     pending: {
       icon: <Clock className="h-3 w-3" />,
       label: "Pending",
-      className: "bg-gray-100 text-gray-800",
+      className: "bg-gray-100 text-gray-800 border-gray-200",
     },
     running: {
       icon: <Loader className="h-3 w-3 animate-spin" />,
       label: "Running",
-      className: "bg-blue-100 text-blue-800",
+      className: "bg-blue-100 text-blue-800 border-blue-200",
     },
     completed: {
       icon: <CheckCircle2 className="h-3 w-3" />,
       label: "Completed",
-      className: "bg-green-100 text-green-800",
+      className: "bg-green-100 text-green-800 border-green-200",
     },
     failed: {
       icon: <XCircle className="h-3 w-3" />,
       label: "Failed",
-      className: "bg-red-100 text-red-800",
+      className: "bg-red-100 text-red-800 border-red-200",
     },
   };
 
@@ -92,7 +99,7 @@ function StatusBadge({
   return (
     <Badge
       variant="outline"
-      className={cn("gap-1 border-transparent font-normal", config.className)}
+      className={cn("gap-1.5 border font-medium", config.className)}
     >
       {config.icon}
       <span>{config.label}</span>
@@ -107,6 +114,8 @@ function StatusBadge({
  * @returns {JSX.Element} The rendered list of experiments.
  */
 export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+
   if (initialExperiments.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 p-12 text-center">
@@ -120,33 +129,51 @@ export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
     );
   }
 
+  // Calculate pagination
+  const totalPages = Math.ceil(initialExperiments.length / EXPERIMENTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * EXPERIMENTS_PER_PAGE;
+  const endIndex = startIndex + EXPERIMENTS_PER_PAGE;
+  const currentExperiments = initialExperiments.slice(startIndex, endIndex);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Experiments</CardTitle>
-        <CardDescription>
-          A list of your recent model training runs.
+    <Card className="border-gray-200 shadow-sm">
+      <CardHeader className="border-b border-gray-100 bg-gray-50/50">
+        <CardTitle className="text-xl font-semibold text-gray-900">Recent Experiments</CardTitle>
+        <CardDescription className="text-gray-600">
+          A list of your recent model training runs. Showing {startIndex + 1}-{Math.min(endIndex, initialExperiments.length)} of {initialExperiments.length} experiments.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Model</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead>
+            <TableRow className="border-gray-100 bg-gray-50/30">
+              <TableHead className="font-semibold text-gray-700">Model</TableHead>
+              <TableHead className="font-semibold text-gray-700">Status</TableHead>
+              <TableHead className="font-semibold text-gray-700">Created At</TableHead>
+              <TableHead className="font-semibold text-gray-700">
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {initialExperiments.map((exp) => (
-              <TableRow key={exp.id}>
+            {currentExperiments.map((exp) => (
+              <TableRow key={exp.id} className="border-gray-100 hover:bg-gray-50/50 transition-colors">
                 <TableCell className="font-medium">
                   <Link
                     href={`/dashboard/projects/${exp.projectId}/experiments/${exp.id}`}
-                    className="hover:underline"
+                    className="text-blue-600 hover:text-blue-700 hover:underline transition-colors"
                   >
                     {(exp.modelConfig as any)?.modelName ?? "N/A"}
                   </Link>
@@ -154,14 +181,14 @@ export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
                 <TableCell>
                   <StatusBadge status={exp.status} />
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-gray-600">
                   {new Date(exp.createdAt).toLocaleString("en-US", {
                     dateStyle: "medium",
                     timeStyle: "short",
                   })}
                 </TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="icon" disabled>
+                  <Button variant="ghost" size="icon" disabled className="text-gray-400 hover:text-gray-600">
                     <MoreHorizontal className="h-4 w-4" />
                     <span className="sr-only">More actions</span>
                   </Button>
@@ -170,6 +197,37 @@ export function ExperimentsList({ initialExperiments }: ExperimentsListProps) {
             ))}
           </TableBody>
         </Table>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/30 px-6 py-4">
+            <div className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

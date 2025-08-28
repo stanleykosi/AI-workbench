@@ -53,7 +53,11 @@ export function DeployButton({ experimentId, projectId }: DeployButtonProps) {
   };
 
   return (
-    <Button onClick={handleDeploy} disabled={isPending}>
+    <Button
+      onClick={handleDeploy}
+      disabled={isPending}
+      className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 shadow-sm hover:shadow-md transition-all duration-200 text-white border-0"
+    >
       <Rocket className="mr-2 h-4 w-4" />
       {isPending ? "Deploying..." : "Deploy"}
     </Button>

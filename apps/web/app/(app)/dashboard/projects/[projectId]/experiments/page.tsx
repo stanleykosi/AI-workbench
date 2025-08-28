@@ -54,21 +54,23 @@ export default function ExperimentsPage({
 }) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
+        <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Experiments</h1>
-          <p className="mt-1 text-muted-foreground">
+          <p className="text-base text-muted-foreground leading-relaxed max-w-2xl">
             Track and compare your model training runs.
           </p>
         </div>
-        <Button asChild>
-          <Link
-            href={`/dashboard/projects/${params.projectId}/experiments/new`}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New Experiment
-          </Link>
-        </Button>
+        <div className="animate-in fade-in-0 slide-in-from-right-4 duration-700 delay-200">
+          <Button asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-sm hover:shadow-md transition-all duration-200">
+            <Link
+              href={`/dashboard/projects/${params.projectId}/experiments/new`}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              New Experiment
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Suspense fallback={<ExperimentsSkeleton />}>
