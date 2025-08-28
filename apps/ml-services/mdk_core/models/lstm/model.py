@@ -225,7 +225,14 @@ class LstmModel(Model):
             data_copy["date"] = pd.to_datetime(data_copy["date"])
             data_copy = data_copy.set_index("date")
 
-        data_copy = data_copy.resample(self.config.interval).mean().dropna()
+        # For inference, preserve the original data frequency instead of aggressive resampling
+        # Only resample if the data is very high frequency (e.g., 1min) to avoid memory issues
+        if len(data_copy) > 1000:  # If we have too many rows, resample to hourly
+            data_copy = data_copy.resample("H").mean().dropna()
+            print(f"📊 High frequency data detected, resampling to hourly: {len(data_copy)} rows")
+        else:
+            # Keep original frequency for inference
+            print(f"📊 Keeping original data frequency: {len(data_copy)} rows")
         
         time_steps = self.config.time_steps if time_steps is None else time_steps
 
@@ -269,15 +276,20 @@ class LstmModel(Model):
             data_copy["date"] = pd.to_datetime(data_copy["date"])
             data_copy = data_copy.set_index("date")
 
-        # Resample data and drop NaN values
-        data_copy = data_copy.resample(self.config.interval).mean().dropna()
+        # For inference, preserve the original data frequency instead of aggressive resampling
+        # Only resample if the data is very high frequency (e.g., 1min) to avoid memory issues
+        if len(data_copy) > 1000:  # If we have too many rows, resample to hourly
+            data_copy = data_copy.resample("H").mean().dropna()
+            print(f"📊 High frequency data detected, resampling to hourly: {len(data_copy)} rows")
+        else:
+            # Keep original frequency for inference
+            print(f"📊 Keeping original data frequency: {len(data_copy)} rows")
         
-        print(f"📊 Original data: {len(last_known_data)} rows, After resampling: {len(data_copy)} rows")
         print(f"📊 Required time_steps: {self.config.time_steps}")
 
         if len(data_copy) < self.config.time_steps:
             raise ValueError(
-                f"Not enough data to generate a forecast. Required at least {self.config.time_steps} data points, got {len(data_copy)} after resampling."
+                f"Not enough data to generate a forecast. Required at least {self.config.time_steps} data points, got {len(data_copy)} after processing."
             )
 
         close_prices_scaled = self.scaler.transform(
@@ -316,10 +328,32 @@ class LstmModel(Model):
 
         predictions_unscaled = self.scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
         
+        # Determine the appropriate frequency for forecast dates based on the processed data
+        if len(data_copy) > 1000:  # If we resampled to hourly
+            forecast_freq = "H"
+        else:
+            # Infer frequency from the data
+            if len(data_copy) > 1:
+                time_diff = data_copy.index[1] - data_copy.index[0]
+                if time_diff <= pd.Timedelta(minutes=5):
+                    forecast_freq = "5T"  # 5 minutes
+                elif time_diff <= pd.Timedelta(minutes=15):
+                    forecast_freq = "15T"  # 15 minutes
+                elif time_diff <= pd.Timedelta(minutes=30):
+                    forecast_freq = "30T"  # 30 minutes
+                elif time_diff <= pd.Timedelta(hours=1):
+                    forecast_freq = "H"  # Hourly
+                elif time_diff <= pd.Timedelta(days=1):
+                    forecast_freq = "D"  # Daily
+                else:
+                    forecast_freq = "D"  # Default to daily
+            else:
+                forecast_freq = "D"  # Default to daily
+        
         forecast_dates = pd.date_range(
-            start=data_copy.index[-1] + pd.Timedelta(days=1),
+            start=data_copy.index[-1] + pd.Timedelta(seconds=1),  # Start from next second
             periods=steps,
-            freq=self.config.interval,
+            freq=forecast_freq,
         )
 
         df_forecast = pd.DataFrame(
