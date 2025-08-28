@@ -1,0 +1,41 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ep1" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#DC2626;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0EA5E9;stop-opacity:1" />
+    </linearGradient>
+    <filter id="evolution-glow">
+      <feGaussianBlur stdDeviation="1" result="evolved"/>
+      <feMerge>
+        <feMergeNode in="evolved"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Pyramid layers -->
+  <path d="M50 85 L20 55 L80 55 Z" fill="none" stroke="#DC2626" stroke-width="3" opacity="0.7"/>
+  <path d="M50 70 L30 50 L70 50 Z" fill="none" stroke="#059669" stroke-width="2.5" opacity="0.8"/>
+  <path d="M50 55 L40 45 L60 45 Z" fill="none" stroke="#0EA5E9" stroke-width="2" opacity="0.9"/>
+  <path d="M50 50 L45 45 L55 45 Z" fill="url(#ep1)" stroke="#0EA5E9" stroke-width="0.5"/>
+  
+  <!-- Evolution nodes -->
+  <circle cx="50" cy="55" r="2" fill="#DC2626" opacity="0.8"/>
+  <circle cx="50" cy="48" r="1.5" fill="#059669" opacity="0.9"/>
+  <circle cx="50" cy="43" r="1" fill="#0EA5E9" opacity="1"/>
+  
+  <!-- Growth vectors -->
+  <line x1="25" y1="60" x2="50" y2="43" stroke="#DC2626" stroke-width="1.5" opacity="0.6"/>
+  <line x1="75" y1="60" x2="50" y2="43" stroke="#DC2626" stroke-width="1.5" opacity="0.6"/>
+  <line x1="32" y1="48" x2="50" y2="40" stroke="#059669" stroke-width="1.5" opacity="0.7"/>
+  <line x1="68" y1="48" x2="50" y2="40" stroke="#059669" stroke-width="1.5" opacity="0.7"/>
+  
+  <!-- Acceleration indicators -->
+  <path d="M15 65 L25 60 L28 63" stroke="#DC2626" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <path d="M85 65 L75 60 L72 63" stroke="#DC2626" stroke-width="1.5" fill="none" opacity="0.5"/>
+  
+  <!-- Evolution ascent -->
+  <circle cx="50" cy="35" r="0.5" fill="#0EA5E9" opacity="0.9"/>
+  <path d="M50 35 L50 20" stroke="#0EA5E9" stroke-width="1.5" opacity="0.8" stroke-dasharray="2,1"/>
+</svg>

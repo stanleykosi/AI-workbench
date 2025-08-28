@@ -1,0 +1,35 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="qf1">
+      <stop offset="0%" style="stop-color:#14B8A6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0EA5E9;stop-opacity:0.7" />
+    </radialGradient>
+    <filter id="quantum-glow">
+      <feGaussianBlur stdDeviation="2.5" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Quantum spiral core -->
+  <path d="M50 15 A35 35 0 1 1 50 85 A35 35 0 1 1 50 15" fill="none" stroke="url(#qf1)" stroke-width="3" stroke-linecap="round" filter="url(#quantum-glow)"/>
+  
+  <!-- Flow particles -->
+  <circle cx="30" cy="30" r="3" fill="#14B8A6" opacity="0.9"/>
+  <circle cx="70" cy="30" r="3" fill="#14B8A6" opacity="0.9"/>
+  <circle cx="70" cy="70" r="3" fill="#0EA5E9" opacity="0.9"/>
+  <circle cx="30" cy="70" r="3" fill="#0EA5E9" opacity="0.9"/>
+  
+  <!-- Quantum connections -->
+  <line x1="30" y1="30" x2="70" y2="30" stroke="#14B8A6" stroke-width="1.5" opacity="0.4"/>
+  <line x1="70" y1="30" x2="70" y2="70" stroke="#0EA5E9" stroke-width="1.5" opacity="0.4"/>
+  <line x1="70" y1="70" x2="30" y2="70" stroke="#14B8A6" stroke-width="1.5" opacity="0.4"/>
+  <line x1="30" y1="70" x2="30" y2="30" stroke="#0EA5E9" stroke-width="1.5" opacity="0.4"/>
+  
+  <!-- Central vortex -->
+  <circle cx="50" cy="50" r="8" fill="url(#qf1)" opacity="0.8"/>
+  <circle cx="50" cy="50" r="12" fill="none" stroke="#14B8A6" stroke-width="0.5" opacity="0.6"/>
+  <circle cx="50" cy="50" r="16" fill="none" stroke="#0EA5E9" stroke-width="0.5" opacity="0.4"/>
+</svg>
