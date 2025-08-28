@@ -18,6 +18,7 @@
  */
 "use client";
 
+import { CheckCircle2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -38,18 +39,18 @@ import {
  */
 function SkeletonRow() {
   return (
-    <TableRow>
+    <TableRow className="border-gray-100">
       <TableCell>
-        <div className="h-4 w-24 animate-pulse rounded-md bg-muted" />
+        <div className="h-4 w-24 animate-pulse rounded-md bg-gray-200" />
       </TableCell>
       <TableCell>
-        <div className="h-6 w-28 animate-pulse rounded-full bg-muted" />
+        <div className="h-6 w-28 animate-pulse rounded-full bg-gray-200" />
       </TableCell>
       <TableCell>
-        <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+        <div className="h-4 w-full animate-pulse rounded-md bg-gray-200" />
       </TableCell>
       <TableCell>
-        <div className="h-4 w-32 animate-pulse rounded-md bg-muted" />
+        <div className="h-4 w-32 animate-pulse rounded-md bg-gray-200" />
       </TableCell>
     </TableRow>
   );
@@ -60,26 +61,31 @@ function SkeletonRow() {
  */
 export function DeploymentsSkeleton() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Active Endpoints</CardTitle>
+    <Card className="border-gray-200 shadow-sm">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <CheckCircle2 className="h-5 w-5 text-green-600" />
+          Active Endpoints
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Model</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Endpoint URL</TableHead>
-              <TableHead>Created At</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <SkeletonRow key={index} />
-            ))}
-          </TableBody>
-        </Table>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-gray-200 bg-gray-50/50">
+                <TableHead className="font-semibold text-gray-900">Model</TableHead>
+                <TableHead className="font-semibold text-gray-900">Status</TableHead>
+                <TableHead className="font-semibold text-gray-900">Predict URL</TableHead>
+                <TableHead className="font-semibold text-gray-900">Created At</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <SkeletonRow key={index} />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

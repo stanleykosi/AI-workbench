@@ -11,6 +11,7 @@
  *   based on the deployment's status (e.g., deploying, active, error).
  * - Copy to Clipboard: Includes a button to easily copy the endpoint URL.
  * - Empty State UI: Provides a clear message to the user if no deployments exist.
+ * - Pagination: Shows only 10 deployments per page to improve performance.
  *
  * @dependencies
  * - `react`: For `useState`.
@@ -29,6 +30,8 @@ import {
   ClipboardCheck,
   Loader,
   XCircle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -64,22 +67,22 @@ function StatusBadge({
     deploying: {
       icon: <Loader className="h-3 w-3 animate-spin" />,
       label: "Deploying",
-      className: "bg-blue-100 text-blue-800",
+      className: "bg-blue-100 text-blue-800 border-blue-200",
     },
     active: {
       icon: <CheckCircle2 className="h-3 w-3" />,
       label: "Active",
-      className: "bg-green-100 text-green-800",
+      className: "bg-green-100 text-green-800 border-green-200",
     },
     inactive: {
       icon: <XCircle className="h-3 w-3" />,
       label: "Inactive",
-      className: "bg-gray-100 text-gray-800",
+      className: "bg-gray-100 text-gray-800 border-gray-200",
     },
     error: {
       icon: <XCircle className="h-3 w-3" />,
       label: "Error",
-      className: "bg-red-100 text-red-800",
+      className: "bg-red-100 text-red-800 border-red-200",
     },
   };
 
@@ -88,7 +91,7 @@ function StatusBadge({
   return (
     <Badge
       variant="outline"
-      className={cn("gap-1 border-transparent font-normal", config.className)}
+      className={cn("gap-1 border-transparent font-medium", config.className)}
     >
       {config.icon}
       <span>{config.label}</span>
@@ -122,85 +125,182 @@ function CopyButton({ textToCopy }: { textToCopy: string }) {
   );
 }
 
+/**
+ * Shortens a long URL to fit within the table without horizontal scroll.
+ */
+function shortenUrl(url: string): string {
+  if (url.length <= 50) return url;
+
+  // Extract the domain and endpoint ID
+  const urlParts = url.split('/');
+  const domain = urlParts[2]; // modal.run domain
+  const endpointId = urlParts[urlParts.length - 1]; // last part is the ID
+
+  // Return shortened format: domain/.../endpointId
+  return `${domain}/.../${endpointId}`;
+}
+
 interface DeploymentsListProps {
   initialDeployments: DeploymentWithExperiment[];
 }
 
 export function DeploymentsList({ initialDeployments }: DeploymentsListProps) {
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const deploymentsPerPage = 10;
+
+  // Calculate pagination
+  const totalPages = Math.ceil(initialDeployments.length / deploymentsPerPage);
+  const startIndex = (currentPage - 1) * deploymentsPerPage;
+  const endIndex = startIndex + deploymentsPerPage;
+  const currentDeployments = initialDeployments.slice(startIndex, endIndex);
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
   if (initialDeployments.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 p-12 text-center">
-        <h3 className="text-xl font-semibold tracking-tight">
-          No deployments found
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Deploy a completed experiment to create your first inference endpoint.
-        </p>
-      </div>
+      <Card className="border-gray-200 shadow-sm">
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="p-3 bg-gray-100 rounded-full mb-4">
+            <XCircle className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold tracking-tight text-gray-900">
+            No deployments found
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground max-w-md">
+            Deploy a completed experiment to create your first inference endpoint.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Active Endpoints</CardTitle>
-        <CardDescription>
-          A list of your deployed model inference endpoints.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Model</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Predict URL</TableHead>
-              <TableHead>Created At</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {initialDeployments.map((dep) => (
-              <TableRow key={dep.id}>
-                <TableCell className="font-medium">
-                  {(dep.experiment?.modelConfig as any)?.modelName ?? "N/A"}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={dep.status} />
-                </TableCell>
-                <TableCell>
-                  {dep.modalEndpointUrl ? (
-                    (() => {
-                      const predictUrl = `${dep.modalEndpointUrl}/predict/${dep.experimentId}`;
-                      return (
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={predictUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="truncate text-sm text-blue-600 hover:underline"
-                            title={predictUrl}
-                          >
-                            {predictUrl}
-                          </a>
-                          <CopyButton textToCopy={predictUrl} />
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    <span className="text-muted-foreground">Generating...</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {new Date(dep.createdAt).toLocaleString("en-US", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      {/* Deployments table */}
+      <Card className="border-gray-200 shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            Active Endpoints
+          </CardTitle>
+          <CardDescription>
+            A list of your deployed model inference endpoints.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-gray-200 bg-gray-50/50">
+                  <TableHead className="font-semibold text-gray-900">Model</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Status</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Predict URL</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Created At</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentDeployments.map((dep) => (
+                  <TableRow key={dep.id} className="border-gray-100 hover:bg-gray-50/50">
+                    <TableCell className="font-medium text-gray-900">
+                      {(dep.experiment?.modelConfig as any)?.modelName ?? "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={dep.status} />
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      {dep.modalEndpointUrl ? (
+                        (() => {
+                          const predictUrl = `${dep.modalEndpointUrl}/predict/${dep.experimentId}`;
+                          const shortenedUrl = shortenUrl(predictUrl);
+                          return (
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={predictUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="truncate text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200"
+                                title={predictUrl}
+                              >
+                                {shortenedUrl}
+                              </a>
+                              <CopyButton textToCopy={predictUrl} />
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Generating...</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {new Date(dep.createdAt).toLocaleString("en-US", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <Card className="border-gray-200 shadow-sm">
+          <CardContent className="flex items-center justify-between px-6 py-4">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, initialDeployments.length)} of {initialDeployments.length} deployments
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className={cn(
+                      "h-8 w-8 p-0",
+                      currentPage === page
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : "border-gray-300 hover:bg-gray-50"
+                    )}
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

@@ -19,6 +19,8 @@
  * - `./_components/deployments-skeleton`: The skeleton loader for the fallback UI.
  */
 import { Suspense } from "react";
+import Link from "next/link";
+import { ArrowLeft, Rocket } from "lucide-react";
 import { getDeploymentsForProjectAction } from "@/actions/db/deployments-actions";
 import { DeploymentsList } from "./_components/deployments-list";
 import { DeploymentsSkeleton } from "./_components/deployments-skeleton";
@@ -48,18 +50,39 @@ export default function DeploymentsPage({
 }) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Deployments</h1>
-          <p className="mt-1 text-muted-foreground">
-            Manage and monitor your deployed model endpoints.
-          </p>
-        </div>
+      {/* Header with back navigation */}
+      <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
+        <Link
+          href={`/dashboard/projects/${params.projectId}/experiments`}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors duration-200"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Experiments
+        </Link>
       </div>
 
-      <Suspense fallback={<DeploymentsSkeleton />}>
-        <DeploymentsFetcher projectId={params.projectId} />
-      </Suspense>
+      {/* Main content */}
+      <div className="space-y-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-200">
+        {/* Title and description */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Rocket className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Deployments</h1>
+              <p className="text-base text-muted-foreground leading-relaxed">
+                Manage and monitor your deployed model endpoints.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Deployments list */}
+        <Suspense fallback={<DeploymentsSkeleton />}>
+          <DeploymentsFetcher projectId={params.projectId} />
+        </Suspense>
+      </div>
     </div>
   );
 }
