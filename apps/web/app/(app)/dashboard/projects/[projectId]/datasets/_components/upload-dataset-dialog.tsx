@@ -47,9 +47,10 @@ import { Progress } from "@/components/ui/progress";
 
 interface UploadDatasetDialogProps {
   projectId: string;
+  onDatasetUploaded?: () => void;
 }
 
-export function UploadDatasetDialog({ projectId }: UploadDatasetDialogProps) {
+export function UploadDatasetDialog({ projectId, onDatasetUploaded }: UploadDatasetDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [isUploading, setIsUploading] = React.useState(false);
@@ -135,6 +136,7 @@ export function UploadDatasetDialog({ projectId }: UploadDatasetDialogProps) {
               toast.success("Dataset uploaded and saved successfully!");
               resetState();
               setOpen(false); // Close the dialog on success
+              onDatasetUploaded?.(); // Call the callback after successful upload
             } else {
               toast.error(`Database error: ${dbResult.message}`);
             }

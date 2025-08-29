@@ -140,7 +140,7 @@ export function FetchTiingoDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
+        <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 shadow-sm hover:shadow-md transition-all duration-200">
           <DownloadIcon className="mr-2 h-4 w-4" />
           Fetch from Tiingo
         </Button>

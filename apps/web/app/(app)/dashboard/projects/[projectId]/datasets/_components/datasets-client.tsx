@@ -6,6 +6,7 @@ import { DatasetList } from "./dataset-list";
 import { FetchTiingoDialog } from "./fetch-tiingo-dialog";
 import { toast } from "sonner";
 import { type SelectDataset } from "@/db/schema";
+import { UploadDatasetDialog } from "./upload-dataset-dialog";
 
 interface DatasetsClientProps {
   projectId: string;
@@ -58,7 +59,11 @@ export function DatasetsClient({ projectId, initialDatasets }: DatasetsClientPro
             Manage your data sources for model training and experimentation.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
+          <UploadDatasetDialog
+            projectId={projectId}
+            onDatasetUploaded={handleDatasetFetched}
+          />
           <FetchTiingoDialog
             projectId={projectId}
             onDatasetFetched={handleDatasetFetched}
