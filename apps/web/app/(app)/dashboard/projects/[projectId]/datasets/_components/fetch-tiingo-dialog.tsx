@@ -58,7 +58,13 @@ function SubmitButton() {
   );
 }
 
-export function FetchTiingoDialog({ projectId }: { projectId: string }) {
+export function FetchTiingoDialog({
+  projectId,
+  onDatasetFetched
+}: {
+  projectId: string;
+  onDatasetFetched?: () => void;
+}) {
   const [open, setOpen] = React.useState(false);
   const [formKey, setFormKey] = React.useState(Date.now()); // To reset the form
   const [dataType, setDataType] = React.useState<string>("");
@@ -69,12 +75,19 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
 
   React.useEffect(() => {
     if (state?.isSuccess) {
-      toast.success(state.message);
+      toast.success("🎉 Data fetch started successfully!", {
+        description: "Your dataset will appear shortly. You can close this dialog.",
+        duration: 5000,
+      });
       setOpen(false);
-    } else if (state?.message) {
-      toast.error(state.message);
+      onDatasetFetched?.(); // Call the callback if provided
+    } else if (state?.message && !state.isSuccess) {
+      toast.error("❌ Data fetch failed", {
+        description: state.message,
+        duration: 8000,
+      });
     }
-  }, [state]);
+  }, [state, onDatasetFetched]);
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -82,6 +95,14 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
       setDataType(""); // Reset data type
     }
     setOpen(isOpen);
+  };
+
+  const handleFormSubmit = () => {
+    // Show loading toast when form is submitted
+    toast.loading("🚀 Starting data fetch...", {
+      description: "This may take a few minutes. Please wait.",
+      duration: 3000,
+    });
   };
 
   const getHelperText = () => {
@@ -131,7 +152,7 @@ export function FetchTiingoDialog({ projectId }: { projectId: string }) {
             Enter the details for the financial data you want to fetch from Tiingo&apos;s API.
           </DialogDescription>
         </DialogHeader>
-        <form key={formKey} action={formAction} className="space-y-4">
+        <form key={formKey} action={formAction} onSubmit={handleFormSubmit} className="space-y-4">
           <input type="hidden" name="projectId" value={projectId} />
 
           <div className="space-y-2">

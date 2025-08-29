@@ -21,9 +21,8 @@
  */
 import { Suspense } from "react";
 import { getDatasetsForProjectAction } from "@/actions/db/datasets-actions";
-import { DatasetList } from "./_components/dataset-list";
+import { DatasetsClient } from "./_components/datasets-client";
 import { DatasetsSkeleton } from "./_components/datasets-skeleton";
-import { DatasetsPageHeader } from "./_components/page-header";
 
 /**
  * An asynchronous component that fetches and prepares dataset data.
@@ -33,15 +32,11 @@ import { DatasetsPageHeader } from "./_components/page-header";
  * @returns {Promise<JSX.Element>} A promise resolving to the DatasetList component.
  */
 async function DatasetsFetcher({ projectId }: { projectId: string }) {
-  const { data: datasets, message } = await getDatasetsForProjectAction(
-    projectId,
-  );
-
+  const { data: datasets, message } = await getDatasetsForProjectAction(projectId);
   if (!datasets) {
     return <p className="text-destructive">{message}</p>;
   }
-
-  return <DatasetList initialDatasets={datasets} projectId={projectId} />;
+  return <DatasetsClient initialDatasets={datasets} projectId={projectId} />;
 }
 
 /**
@@ -50,17 +45,10 @@ async function DatasetsFetcher({ projectId }: { projectId: string }) {
  * @param {{ params: { projectId: string } }} props - The component props, including URL params.
  * @returns {JSX.Element} The rendered datasets page.
  */
-export default function DatasetsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default function DatasetsPage({ params }: { params: { projectId: string } }) {
   return (
-    <div className="space-y-6">
-      <DatasetsPageHeader projectId={params.projectId} />
-      <Suspense fallback={<DatasetsSkeleton />}>
-        <DatasetsFetcher projectId={params.projectId} />
-      </Suspense>
-    </div>
+    <Suspense fallback={<DatasetsSkeleton />}>
+      <DatasetsFetcher projectId={params.projectId} />
+    </Suspense>
   );
 }
