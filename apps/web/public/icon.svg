@@ -1,9 +1,9 @@
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <radialGradient id="p1">
-      <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#0891B2;stop-opacity:0.8" />
-      <stop offset="100%" style="stop-color:#0E7490;stop-opacity:0.4" />
+      <stop offset="0%" style="stop-color:#2563EB;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7C3AED;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:0.4" />
     </radialGradient>
     <filter id="pulsar-glow">
       <feGaussianBlur stdDeviation="3" result="pulsarGlow"/>
@@ -16,42 +16,42 @@
   
   <!-- Pulsar core -->
   <circle cx="50" cy="50" r="8" fill="url(#p1)" filter="url(#pulsar-glow)"/>
-  <circle cx="50" cy="50" r="12" fill="none" stroke="#06B6D4" stroke-width="1.5" opacity="0.7">
+  <circle cx="50" cy="50" r="12" fill="none" stroke="#2563EB" stroke-width="1.5" opacity="0.7">
     <animate attributeName="r" values="12;20;12" dur="2s" repeatCount="indefinite"/>
     <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2s" repeatCount="indefinite"/>
   </circle>
   
   <!-- Angular beams -->
   <g transform="translate(50 50)">
-    <path d="M0 0 L30 -5 L35 5 L12 8 Z" fill="#06B6D4" opacity="0.8">
+    <path d="M0 0 L30 -5 L35 5 L12 8 Z" fill="#2563EB" opacity="0.8">
       <animateTransform attributeName="transform" type="rotate" values="0;120;240;360" dur="4s" repeatCount="indefinite"/>
     </path>
-    <path d="M0 0 L30 5 L35 -5 L12 -8 Z" fill="#0891B2" opacity="0.8">
+    <path d="M0 0 L30 5 L35 -5 L12 -8 Z" fill="#7C3AED" opacity="0.8">
       <animateTransform attributeName="transform" type="rotate" values="0;120;240;360" dur="4s" repeatCount="indefinite"/>
     </path>
   </g>
   
   <!-- Algorithmic orbitals -->
-  <ellipse cx="50" cy="50" rx="25" ry="8" fill="none" stroke="#06B6D4" stroke-width="1" opacity="0.6"/>
-  <ellipse cx="50" cy="50" rx="8" ry="25" fill="none" stroke="#0891B2" stroke-width="1" opacity="0.6"/>
-  <ellipse cx="50" cy="50" rx="20" ry="10" fill="none" stroke="#0E7490" stroke-width="0.5" opacity="0.4" transform="rotate(45 50 50)"/>
+  <ellipse cx="50" cy="50" rx="25" ry="8" fill="none" stroke="#2563EB" stroke-width="1" opacity="0.6"/>
+  <ellipse cx="50" cy="50" rx="8" ry="25" fill="none" stroke="#7C3AED" stroke-width="1" opacity="0.6"/>
+  <ellipse cx="50" cy="50" rx="20" ry="10" fill="none" stroke="#8B5CF6" stroke-width="0.5" opacity="0.4" transform="rotate(45 50 50)"/>
   
   <!-- Computational nodes -->
-  <circle cx="35" cy="25" r="1.5" fill="#06B6D4">
+  <circle cx="35" cy="25" r="1.5" fill="#2563EB">
     <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="65" cy="75" r="1.5" fill="#0891B2">
+  <circle cx="65" cy="75" r="1.5" fill="#7C3AED">
     <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite" begin="1s"/>
   </circle>
-  <circle cx="25" cy="65" r="1.5" fill="#0E7490">
+  <circle cx="25" cy="65" r="1.5" fill="#8B5CF6">
     <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite" begin="2s"/>
   </circle>
-  <circle cx="75" cy="35" r="1.5" fill="#06B6D4">
+  <circle cx="75" cy="35" r="1.5" fill="#2563EB">
     <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite" begin="0.5s"/>
   </circle>
   
   <!-- Algorithm flow -->
-  <circle cx="50" cy="50" r="3" fill="#06B6D4">
+  <circle cx="50" cy="50" r="3" fill="#2563EB">
     <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite"/>
   </circle>
 </svg>
